@@ -1,0 +1,2490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AkiraBrain.pet — Stream Economy Simulator</title>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --panel-bg: #131823;
+            --panel-border: #1e2638;
+            --accent: #00ffcc;
+            --accent-glow: rgba(0, 255, 204, 0.3);
+            --text: #ffffff;
+            --text-secondary: #8b9bb4;
+            --danger: #ff4757;
+            --warning: #ffa502;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--panel-bg);
+            border-bottom: 2px solid var(--panel-border);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+            letter-spacing: 1px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-profile-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-profile-badge span {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .balance-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--panel-border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .balance-container span {
+            color: var(--warning);
+        }
+
+        nav {
+            display: flex;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            overflow-x: auto;
+            padding: 0 10px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: rgba(0, 255, 204, 0.05);
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .case-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .case-img {
+            width: 100%;
+            height: 175px;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .case-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .case-price {
+            color: var(--warning);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ffcc, #00b386);
+            color: #0b0e14;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background: #2f3640;
+            color: #718093;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .roulette-window {
+            width: 100%;
+            max-width: 1050px;
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .roulette-track-container {
+            width: 100%;
+            height: 190px;
+            overflow: hidden;
+            position: relative;
+            background: #080a0f;
+            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+            margin: 20px 0;
+        }
+
+        .roulette-pointer {
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            width: 4px;
+            background: var(--accent);
+            transform: translateX(-50%);
+            z-index: 10;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .roulette-track {
+            display: flex;
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            will-change: transform;
+        }
+
+        .roulette-item {
+            min-width: 160px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid var(--panel-border);
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .roulette-item-name {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .roulette-item-price {
+            font-size: 0.9rem;
+            color: var(--warning);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .qty-box {
+            background: var(--panel-bg);
+            border: 2px solid var(--panel-border);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .qty-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .qty-btn {
+            background: #1e2638;
+            color: #fff;
+            border: 1px solid var(--panel-border);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .qty-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 204, 0.1);
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .inv-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .inv-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .inv-card.selected {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+            background: rgba(0, 255, 204, 0.05);
+        }
+
+        .inv-card.locked {
+            border-color: var(--warning);
+            opacity: 0.9;
+        }
+
+        .lock-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(255, 165, 2, 0.2);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .inv-item-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin: 8px 0 4px;
+        }
+
+        .inv-item-price {
+            color: var(--warning);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .btn-sell {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 6px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-sell:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .promo-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 450px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .promo-input {
+            width: 100%;
+            padding: 14px;
+            background: #080a0f;
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .promo-input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        .msg {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .msg.success { color: var(--accent); }
+        .msg.error { color: var(--danger); }
+
+        .empty-text {
+            color: var(--text-secondary);
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 40px;
+        }
+
+        .upgrader-container {
+            display: grid;
+            grid-template-columns: 1.2fr 1.1fr;
+            gap: 25px;
+        }
+
+        @media(max-width: 900px) {
+            .upgrader-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upgrader-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .upgrader-slots-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .upgrader-slot {
+            width: 100%;
+            height: 140px;
+            background: #080a0f;
+            border: 2px dashed var(--panel-border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upgrader-slot:hover {
+            border-color: var(--accent);
+        }
+
+        .upgrader-slot.filled {
+            border-style: solid;
+            border-color: var(--accent);
+            background: rgba(0, 255, 204, 0.03);
+        }
+
+        .chance-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .chance-btn {
+            background: #1e2638;
+            border: 1px solid var(--panel-border);
+            color: var(--text);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .chance-btn:hover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 204, 0.1);
+        }
+
+        .chance-btn.active {
+            background: var(--accent);
+            color: #0b0e14;
+            border-color: var(--accent);
+        }
+
+        .upgrade-stats {
+            background: rgba(0,0,0,0.3);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .upgrade-stats span {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .upgrade-wheel-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 10px auto;
+        }
+
+        .upgrade-wheel-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+
+        .upgrade-wheel-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: #080a0f;
+            border: 2px solid var(--panel-border);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+            z-index: 5;
+        }
+
+        .upgrade-pointer-arrow {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform-origin: 50% 100px;
+            transform: translateX(-50%) rotate(0deg);
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 18px solid var(--accent);
+            z-index: 20;
+            filter: drop-shadow(0 0 6px var(--accent));
+            will-change: transform;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--panel-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+        }
+
+        .requests-table th, .requests-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--panel-border);
+            font-size: 0.95rem;
+        }
+
+        .requests-table th {
+            background: rgba(0,0,0,0.3);
+            color: var(--accent);
+        }
+
+        .requests-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        @media(max-width: 768px) {
+            .profile-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .profile-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        /* COLOR DICE STYLES */
+        .dice-game-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .dice-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .color-die {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            border: 3px solid #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .die-dot {
+            width: 22px;
+            height: 22px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dice-controls {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--panel-border);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .dice-bet-input {
+            width: 100%;
+            padding: 12px;
+            background: #080a0f;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.1rem;
+            margin-top: 5px;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .dice-bet-input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        .dice-quick-btns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .dice-rules-box {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">AkiraBrain.pet</div>
+        <div class="header-right">
+            <div class="user-profile-badge" id="profile-badge" style="display: none;">
+                👤 <span id="current-username"></span>
+            </div>
+            <div class="balance-container">
+                💰 <span id="balance">0</span> Braincoins
+            </div>
+        </div>
+    </header>
+
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" class="modal">
+        <div class="qty-box" style="max-width: 420px;">
+            <h2 style="margin-bottom: 5px; color: var(--accent);">Создание аккаунта</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Введите ваш никнейм. Обратите внимание: изменить его в дальнейшем будет нельзя!</p>
+            <input type="text" id="auth-input" class="promo-input" placeholder="Ваш никнейм..." style="text-transform: none;">
+            <button class="btn" onclick="registerUser()">Зарегистрироваться</button>
+            <div id="auth-msg" class="msg"></div>
+        </div>
+    </div>
+
+    <nav>
+        <button class="tab-btn active" onclick="switchTab('cases', event)">📦 Кейсы</button>
+        <button class="tab-btn" onclick="switchTab('inventory', event)">🎒 Инвентарь</button>
+        <button class="tab-btn" onclick="switchTab('profile', event)">👤 Профиль </button>
+        <button class="tab-btn" onclick="switchTab('promo', event)">🎟️ Промокоды</button>
+        <button class="tab-btn" onclick="switchTab('upgrader', event)">⚡ Апгрейдер</button>
+        <button class="tab-btn" onclick="switchTab('fuse', event)">🔮 Фьюз</button>
+        <button class="tab-btn" onclick="switchTab('coloredice', event)">🎲 Color dice</button>
+        <button class="tab-btn" id="nav-requests-btn" onclick="switchTab('requests', event)" style="display: none;">📋 Заявки (Админ)</button>
+        <button class="tab-btn" id="nav-admin-content-btn" onclick="switchTab('admin-content', event)" style="display: none; color: var(--warning);">⚙️ Админка (Контент)</button>
+    </nav>
+
+    <main>
+        <!-- CASES TAB -->
+        <div id="cases" class="tab-content active">
+            <div class="cases-grid" id="cases-grid-container"></div>
+        </div>
+
+        <!-- INVENTORY TAB -->
+        <div id="inventory" class="tab-content">
+            <div id="inventory-grid" class="inventory-grid">
+                <div class="empty-text">Ваш инвентарь пуст. Откройте кейсы!</div>
+            </div>
+        </div>
+
+        <!-- PROFILE TAB (DEPOSIT & WITHDRAW) -->
+        <div id="profile" class="tab-content">
+            <div class="profile-layout">
+                <div class="profile-card">
+                    <h3 style="margin-bottom: 5px; color: var(--warning);">💳 Пополнение баланса</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px;">Отдайте брейнрота в игре <b>Steal A Brainrot</b> и получите коины на баланс.</p>
+                    
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Ник в Roblox:</label>
+                    <input type="text" id="deposit-roblox-nick" class="promo-input" placeholder="Ваш Roblox ник..." style="text-transform: none; margin-top: 4px; margin-bottom: 10px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Выберите брейнрота для пополнения:</label>
+                    <select id="deposit-item-select" class="promo-input" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem; background: #080a0f; color: #fff;">
+                        <option value="" disabled selected>-- Выберите предмет --</option>
+                        <option value="Tang tang keletang|28|🥢">Tang tang keletang — 28 коинов 🥢</option>
+                        <option value="Money Money Puggy|30|🐶">Money Money Puggy — 30 коинов 🐶</option>
+                        <option value="Ketupat Kepat|35|🟢">Ketupat Kepat — 35 коинов 🟢</option>
+                        <option value="Tic Tak Sahur|40|⏰">Tic Tak Sahur — 40 коинов ⏰</option>
+                        <option value="Lavadorito spinito|42|🌀">Lavadorito spinito — 42 коинов 🌀</option>
+                        <option value="Garama And madundung|75|🔥">Garama And madundung — 75 коинов 🔥</option>
+                        <option value="tralaledon|90|💎">tralaledon — 90 коинов 💎</option>
+                        <option value="Burguro and Fruyuro|90|🍔">Burguro and Fruyuro — 90 коинов 🍔</option>
+                        <option value="Los primos|100|👥">Los primos — 100 коинов 👥</option>
+                        <option value="Cash or Card|80|💳">Cash or Card — 80 коинов 💳</option>
+                        <option value="CapiTano moby|150|🐋">CapiTano moby — 150 коинов 🐋</option>
+                        <option value="cerberus|200|🐕">cerberus — 200 коинов 🐕</option>
+                        <option value="Dragon Canelloni|750|🐉">Dragon Canelloni — 750 коинов 🐉</option>
+                        <option value="TikTok Live Gem|1|📱">TikTok Live Gem — 1 коинов 📱</option>
+                    </select>
+
+                    <div style="background: rgba(255, 165, 2, 0.05); border: 1px solid var(--panel-border); padding: 10px; border-radius: 8px; font-size: 0.8rem; color: var(--warning); margin-bottom: 12px; text-align: center;">
+                        ⏰ Будьте в игре с 20:00 до 20:20 и готовьтесь принять трейд!
+                    </div>
+
+                    <button class="btn" style="background: linear-gradient(135deg, var(--warning), #e67e22); color: #0b0e14; padding: 10px;" onclick="sendDepositRequest()">Запросить пополнение</button>
+                    <div id="deposit-msg" class="msg" style="text-align: center; font-size: 0.85rem; margin-top: 10px;"></div>
+                </div>
+
+                <div class="profile-card">
+                    <h3 style="margin-bottom: 5px; color: var(--accent);">📥 Вывод брейнрота</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px;">Доступно от 50 коинов стоимости предмета. Предмет будет заблокирован под замком до подтверждения.</p>
+                    
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Ник в Roblox:</label>
+                    <input type="text" id="withdraw-roblox-nick" class="promo-input" placeholder="Ваш Roblox ник..." style="text-transform: none; margin-top: 4px; margin-bottom: 10px; padding: 10px; font-size: 0.95rem;">
+                    
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Удобное время для трейда:</label>
+                    <input type="text" id="withdraw-time-input" class="promo-input" placeholder="Например: Сегодня в 20:10" style="text-transform: none; margin-top: 4px; margin-bottom: 10px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Выберите предмет (от 50 🪙):</label>
+                    <div id="withdraw-inventory-picker" style="max-height: 120px; overflow-y: auto; background: #080a0f; border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px; margin-top: 4px; margin-bottom: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px;">
+                        <div class="empty-text" style="grid-column: 1/-1; padding: 15px; font-size: 0.8rem;">Нет подходящих предметов</div>
+                    </div>
+
+                    <div style="background: rgba(0, 255, 204, 0.03); border: 1px solid var(--panel-border); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 0.8rem;" id="selected-withdraw-item-info">
+                        Выбранный предмет: <span style="color: var(--warning); font-weight: bold;">Не выбран</span>
+                    </div>
+                    
+                    <button class="btn" style="padding: 10px;" onclick="sendWithdrawRequest()">Отправить заявку на вывод</button>
+                    <div id="withdraw-msg" class="msg" style="text-align: center; font-size: 0.85rem; margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROMO CODES TAB -->
+        <div id="promo" class="tab-content">
+            <div class="promo-box">
+                <input type="text" id="promo-input" class="promo-input" placeholder="Введите промокод">
+                <button class="btn" onclick="activatePromo()">Активировать</button>
+                <div id="promo-msg" class="msg"></div>
+            </div>
+        </div>
+
+        <!-- UPGRADER TAB -->
+        <div id="upgrader" class="tab-content">
+            <div class="upgrader-container">
+                <div class="upgrader-panel">
+                    <h2 style="margin-bottom: 10px;">⚡ Апгрейдер предметов</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Выберите ставку и желаемый процент (макс. 80%):</p>
+                    
+                    <div class="upgrader-slots-row">
+                        <div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Ваш предмет (Ставка):</div>
+                            <div class="upgrader-slot" id="upgrader-source-slot" onclick="openUpgraderSelector('source')">
+                                <span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать ставку</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Желаемый приз:</div>
+                            <div class="upgrader-slot" id="upgrader-target-slot" onclick="openUpgraderSelector('target')">
+                                <span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать приз</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">Желаемый шанс (максимум 80%):</div>
+                    <div class="chance-buttons">
+                        <button class="chance-btn" onclick="setTargetChance(1)">1%</button>
+                        <button class="chance-btn" onclick="setTargetChance(5)">5%</button>
+                        <button class="chance-btn" onclick="setTargetChance(25)">25%</button>
+                        <button class="chance-btn active" onclick="setTargetChance(50)">50%</button>
+                        <button class="chance-btn" onclick="setTargetChance(75)">75%</button>
+                        <button class="chance-btn" onclick="setTargetChance(80)">80% (Макс)</button>
+                    </div>
+
+                    <div class="upgrade-stats">
+                        <div>Множитель: <span id="upgrade-multiplier-text">1.00x</span></div>
+                        <div>Шанс: <span id="upgrade-chance-text">50.0%</span></div>
+                    </div>
+
+                    <div style="text-align: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 14px; margin-bottom: 12px;">
+                        <div class="upgrade-wheel-wrapper">
+                            <div class="upgrade-pointer-arrow" id="upgrade-pointer-arrow"></div>
+                            <svg class="upgrade-wheel-svg" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#1e2638" stroke-width="16" />
+                                <circle id="wheel-success-ring" cx="50" cy="50" r="40" fill="transparent" stroke="#00ffcc" stroke-width="16"
+                                        stroke-dasharray="251.2" stroke-dashoffset="125.6" />
+                            </svg>
+                            <div class="upgrade-wheel-center">
+                                <div id="wheel-center-icon" style="font-size: 1.5rem; margin-bottom: 2px;">⚡</div>
+                                <div id="wheel-center-text" style="font-size: 0.7rem; font-weight: bold; color: var(--text-secondary);">50.0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn" id="upgrade-action-btn" onclick="startUpgrade()" disabled>Совершить апгрейд</button>
+                </div>
+
+                <div class="upgrader-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 id="upgrader-picker-title">🎒 Выберите предмет</h3>
+                        <span id="upgrader-mode-indicator" style="font-size: 0.85rem; color: var(--accent);">Режим: Ставка</span>
+                    </div>
+                    <div id="upgrader-inventory-grid" class="inventory-grid" style="max-height: 480px; overflow-y: auto; padding-right: 5px;">
+                        <div class="empty-text">Инвентарь пуст</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUSE TAB -->
+        <div id="fuse" class="tab-content">
+            <div style="max-width: 900px; margin: 0 auto; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 20px; padding: 25px;">
+                <h2 style="margin-bottom: 5px; color: var(--accent);">🔮 Фьюз (Крафт предметов)</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Выберите от 3 до 10 предметов из инвентаря. В зависимости от их суммарной стоимости вы получите случайный брейнрот!</p>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>Выбрано предметов: <span id="fuse-count" style="color: var(--accent); font-weight: bold;">0</span> / 10 (мин. 3)</div>
+                    <div>Общая сумма: <span id="fuse-total-price" style="color: var(--warning); font-weight: bold;">0 🪙</span></div>
+                </div>
+
+                <div style="margin-bottom: 15px; font-weight: bold; font-size: 0.95rem;">Ваши доступные предметы:</div>
+                <div id="fuse-inventory-grid" class="inventory-grid" style="max-height: 280px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
+                    <div class="empty-text">Нет доступных предметов для фьюза</div>
+                </div>
+
+                <button class="btn" id="fuse-action-btn" onclick="executeFuse()" disabled style="padding: 14px; font-size: 1.1rem;">Сделать Фьюз</button>
+            </div>
+        </div>
+
+        <!-- COLOR DICE TAB -->
+        <div id="coloredice" class="tab-content">
+            <div class="dice-game-container">
+                <h2 style="margin-bottom: 5px; color: var(--accent);">🎲 Color dice</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;">Сделай ставку брейнротами и испытай удачу на цветных кубиках!</p>
+                
+                <div class="dice-rules-box">
+                    <b>Правила игры:</b><br>
+                    • **1 color** = x3 к ставке<br>
+                    • **2 или 3 colors** = L (проигрыш)<br>
+                    • **4 colors** = x2 к ставке
+                </div>
+
+                <div class="dice-row" id="dice-display-row">
+                    <div class="color-die" id="die-0" style="background-color: #ff4757;"><div class="die-dot"></div></div>
+                    <div class="color-die" id="die-1" style="background-color: #ffa502;"><div class="die-dot"></div></div>
+                    <div class="color-die" id="die-2" style="background-color: #2ed573;"><div class="die-dot"></div></div>
+                    <div class="color-die" id="die-3" style="background-color: #3742fa;"><div class="die-dot"></div></div>
+                </div>
+
+                <div class="dice-controls">
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Сумма ставки (Braincoins):</label>
+                    <input type="number" id="dice-bet-amount" class="dice-bet-input" value="10" min="1">
+                    
+                    <div class="dice-quick-btns">
+                        <button class="qty-btn" style="padding: 10px; font-size: 0.9rem;" onclick="setDiceBet('half')">/ 2</button>
+                        <button class="qty-btn" style="padding: 10px; font-size: 0.9rem;" onclick="setDiceBet('double')">2x</button>
+                        <button class="qty-btn" style="padding: 10px; font-size: 0.9rem;" onclick="setDiceBet('max')">Макс</button>
+                        <button class="qty-btn" style="padding: 10px; font-size: 0.9rem;" onclick="setDiceBet('clear')">Сброс</button>
+                    </div>
+                </div>
+
+                <button class="btn" id="dice-play-btn" onclick="playColorDice()" style="padding: 14px; font-size: 1.1rem;">Бросить кубики</button>
+                <div id="dice-result-msg" class="msg" style="text-align: center; font-size: 1rem; margin-top: 15px;"></div>
+            </div>
+        </div>
+
+        <!-- REQUESTS TAB (ADMIN PANEL FOR AKIRA ONLY) -->
+        <div id="requests" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>📋 Админ-панель заявок (Пополнения и Выводы)</h2>
+                <button class="btn-sell" style="padding: 8px 16px; font-size: 0.9rem;" onclick="clearAllRequests()">Очистить историю</button>
+            </div>
+            <div id="requests-container">
+                <div class="empty-text">Пока нет ни одной заявки</div>
+            </div>
+        </div>
+
+        <!-- ADMIN CONTENT TAB (AKIRA ONLY) -->
+        <div id="admin-content" class="tab-content">
+            <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 25px;">
+                <div class="profile-card">
+                    <h3 style="margin-bottom: 15px; color: var(--accent);">➕ Добавить нового брейнрота в кейс</h3>
+                    
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Выберите кейс:</label>
+                    <select id="admin-case-target" class="promo-input" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem; background: #080a0f; color: #fff;"></select>
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Название брейнрота:</label>
+                    <input type="text" id="admin-item-name" class="promo-input" placeholder="Например: Mega Brainrot" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Цена (в Braincoins):</label>
+                    <input type="number" id="admin-item-price" class="promo-input" placeholder="Например: 150" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Эмодзи или иконка:</label>
+                    <input type="text" id="admin-item-icon" class="promo-input" placeholder="Например: 👑" style="text-transform: none; margin-top: 4px; margin-bottom: 15px; padding: 10px; font-size: 0.95rem;">
+
+                    <button class="btn" onclick="adminAddNewBrainrot()">Добавить брейнрота</button>
+                    <div id="admin-item-msg" class="msg" style="text-align: center; font-size: 0.85rem; margin-top: 10px;"></div>
+                </div>
+
+                <div class="profile-card">
+                    <h3 style="margin-bottom: 15px; color: var(--warning);">📦 Создать новый кейс</h3>
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Уникальный ключ (латиницей без пробелов):</label>
+                    <input type="text" id="admin-case-key" class="promo-input" placeholder="neon" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Название кейса:</label>
+                    <input type="text" id="admin-case-title" class="promo-input" placeholder="Neon Case" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Цена кейса (в коинах):</label>
+                    <input type="number" id="admin-case-price" class="promo-input" placeholder="75" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Ссылка на картинку кейса:</label>
+                    <input type="text" id="admin-case-img" class="promo-input" placeholder="https://files.catbox.moe/..." style="text-transform: none; margin-top: 4px; margin-bottom: 15px; padding: 10px; font-size: 0.95rem;">
+
+                    <button class="btn" style="background: linear-gradient(135deg, var(--warning), #e67e22); color: #0b0e14;" onclick="adminAddNewCase()">Создать кейс</button>
+                    <div id="admin-case-msg" class="msg" style="text-align: center; font-size: 0.85rem; margin-top: 10px;"></div>
+                </div>
+
+                <!-- ДОБАВЛЕННЫЙ БЛОК: СОЗДАНИЕ ОГРАНИЧЕННЫХ ПРОМОКОДОВ -->
+                <div class="profile-card">
+                    <h3 style="margin-bottom: 15px; color: var(--accent);">🎟️ Создать промокод с лимитом</h3>
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Код промокода:</label>
+                    <input type="text" id="admin-promo-code" class="promo-input" placeholder="NEWCODE" style="margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Сумма награды (в Braincoins):</label>
+                    <input type="number" id="admin-promo-reward" class="promo-input" placeholder="50" style="text-transform: none; margin-top: 4px; margin-bottom: 12px; padding: 10px; font-size: 0.95rem;">
+
+                    <label style="font-size: 0.85rem; color: var(--text-secondary);">Максимум активаций (лимит):</label>
+                    <input type="number" id="admin-promo-limit" class="promo-input" placeholder="10" style="text-transform: none; margin-top: 4px; margin-bottom: 15px; padding: 10px; font-size: 0.95rem;">
+
+                    <button class="btn" onclick="adminAddNewPromo()">Добавить промокод</button>
+                    <div id="admin-promo-msg" class="msg" style="text-align: center; font-size: 0.85rem; margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- QUANTITY MODAL -->
+    <div id="qty-modal" class="modal">
+        <div class="qty-box">
+            <h2 id="qty-modal-title" style="margin-bottom: 5px;">Выберите количество</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Сколько кейсов открываем?</p>
+            <div class="qty-grid">
+                <button class="qty-btn" onclick="startOpening(1)">1 шт</button>
+                <button class="qty-btn" onclick="startOpening(3)">3 шт</button>
+                <button class="qty-btn" onclick="startOpening(5)">5 шт</button>
+                <button class="qty-btn" onclick="startOpening(10)">10 шт</button>
+            </div>
+            <button class="btn" style="background: #2f3640; color: #fff;" onclick="closeQtyModal()">Отмена</button>
+        </div>
+    </div>
+
+    <!-- ROULETTE MODAL -->
+    <div id="roulette-modal" class="modal">
+        <div class="roulette-window">
+            <h2 id="modal-case-title" style="margin-bottom: 10px;">Открытие кейса...</h2>
+            <div class="roulette-track-container" id="track-container">
+                <div class="roulette-pointer"></div>
+                <div id="roulette-track" class="roulette-track"></div>
+            </div>
+            <div id="modal-results-container"></div>
+        </div>
+    </div>
+
+    <!-- UPGRADE / FUSE RESULT MODAL -->
+    <div id="upgrade-result-modal" class="modal">
+        <div class="qty-box" style="max-width: 400px; text-align: center;">
+            <h2 style="margin-bottom: 10px; color: var(--accent);">Результат</h2>
+            <div id="upgrade-modal-result-text" style="font-size: 1.1rem; font-weight: bold; margin: 20px 0;"></div>
+            <button class="btn" onclick="closeUpgradeResultModal()">Продолжить</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let balance = 0;
+        let inventory = [];
+        let usedPromos = [];
+        let freeCaseCooldownEnd = 0;
+        let globalRequests = [];
+
+        let currentSelectedCase = null;
+        let wonItemsQueue = [];
+        let spinAnimationId = null;
+
+        let upgraderSourceIndex = null;
+        let upgraderTargetItem = null;
+        let upgraderPickerMode = 'source';
+        let selectedDesiredChance = 50;
+
+        let selectedWithdrawIndex = null;
+        let selectedFuseIndices = [];
+
+        let defaultCasesData = {
+            free: { title: "Free Case", price: 0, img: "https://files.catbox.moe/arzplb.jpg" },
+            gears: { title: "Gears Case", price: 15, img: "https://files.catbox.moe/wj3b5n.jpg" },
+            master: { title: "Master Case", price: 25, img: "https://files.catbox.moe/6kz44d.jpg" },
+            orion: { title: "Orion Case", price: 40, img: "https://files.catbox.moe/gkoalj.jpg" },
+            legend: { title: "Legend Case", price: 52, img: "https://files.catbox.moe/cx7e4s.jpg" },
+            random: { title: "Random Case", price: 100, img: "https://files.catbox.moe/t1q8l4.jpg", isAccent: true }
+        };
+
+        let itemsData = {
+            free: [
+                { name: "Noobini Pizzanini", price: 1, icon: "🍕" },
+                { name: "Tim chezze", price: 3, icon: "🧀" },
+                { name: "Talpa di fiero", price: 5, icon: "🛡️" },
+                { name: "La vaca", price: 10, icon: "🐮" }
+            ],
+            gears: [
+                { name: "Radioactive Slap", price: 4, icon: "☢️" },
+                { name: "Cursed Slap", price: 7, icon: "💀" },
+                { name: "Divine Slap", price: 9, icon: "✨" },
+                { name: "Demon Head", price: 11, icon: "👹", ultraRare: true, customWeight: 0.6 },
+                { name: "Ying-yang Slap", price: 14, icon: "☯️" },
+                { name: "Air Strike", price: 18, icon: "🚀" },
+                { name: "Rainbow slap", price: 20, icon: "🌈" },
+                { name: "Candy Slap", price: 25, icon: "🍬" },
+                { name: "Lava slap", price: 27, icon: "🌋" },
+                { name: "Bloodmoon Slap", price: 32, icon: "🌙" },
+                { name: "Waverider", price: 67, icon: "🏄‍♂️" },
+                { name: "Lava blaster", price: 75, icon: "🔫", ultraRare: true, customWeight: 0.3 }
+            ],
+            master: [
+                { name: "Talpa di fiero", price: 5, icon: "🛡️" },
+                { name: "La vaca", price: 10, icon: "🐮" },
+                { name: "Karkerkur", price: 12, icon: "🦴" },
+                { name: "La grande", price: 15, icon: "👑" },
+                { name: "Mariachi Corassoni", price: 19, icon: "🇲🇽" },
+                { name: "Unclito samito", price: 22, icon: "🎩" },
+                { name: "Capitano Gullini", price: 25, icon: "⚓" },
+                { name: "Los Mobilis", price: 33, icon: "🚗" },
+                { name: "Tang tang keletang", price: 28, icon: "🥢" },
+                { name: "Money Money Puggy", price: 30, icon: "🐶" },
+                { name: "Ketupat Kepat", price: 35, icon: "🟢" },
+                { name: "Goblinno Unichiklino", price: 70, icon: "👺" },
+                { name: "Garama And madundung", price: 100, icon: "🔥", rare: true, ultraRare: true }
+            ],
+            orion: [
+                { name: "Talpa di fiero", price: 5, icon: "🛡️" },
+                { name: "La vaca", price: 10, icon: "🐮" },
+                { name: "Karkerkur", price: 12, icon: "🦴" },
+                { name: "Los Chikleteiras", price: 12, icon: "🍬" },
+                { name: "Tic Tak Sahur", price: 40, icon: "⏰" },
+                { name: "Lavadorito spinito", price: 42, icon: "🌀" },
+                { name: "Gorillo Subvufero", price: 30, icon: "🦍" },
+                { name: "Tralalelo", price: 31, icon: "🎶" },
+                { name: "Money Money Puggy", price: 30, icon: "🐶" },
+                { name: "Tang tang keletang", price: 28, icon: "🥢" },
+                { name: "Ketupat Kepat", price: 35, icon: "🟢" },
+                { name: "Orcaledon", price: 85, icon: "🐋" },
+                { name: "Garama And madundung", price: 100, icon: "🔥", rare: true, ultraRare: true }
+            ],
+            legend: [
+                { name: "Karkerkur", price: 12, icon: "🦴" },
+                { name: "La grande", price: 15, icon: "👑" },
+                { name: "Mariachi Corassoni", price: 19, icon: "🇲🇽" },
+                { name: "Unclito samito", price: 22, icon: "🎩" },
+                { name: "Capitano Gullini", price: 25, icon: "⚓" },
+                { name: "Burguro and Fruyuro", price: 95, icon: "🍔" },
+                { name: "Cash or Card", price: 80, icon: "💳" },
+                { name: "tralaledon", price: 90, icon: "💎" },
+                { name: "Goblinno Unichiklino", price: 70, icon: "👺" },
+                { name: "Eviledon", price: 73, icon: "🦹‍♂️", ultraRare: true, customWeight: 0.8 },
+                { name: "Orcaledon", price: 85, icon: "🐋" },
+                { name: "Garama And madundung", price: 100, icon: "🔥", rare: true, ultraRare: true }
+            ],
+            random: [
+                { name: "Tang tang keletang", price: 42, icon: "🥢", customWeight: 1.5 },
+                { name: "Money Money Puggy", price: 36, icon: "🐶", customWeight: 4.5 },
+                { name: "Ketupat Kepat", price: 52, icon: "🟢", customWeight: 4.0 },
+                { name: "Tic Tak Sahur", price: 67, icon: "⏰", customWeight: 3.0 },
+                { name: "Lavadorito spinito", price: 72, icon: "🌀", customWeight: 2.5 },
+                { name: "Garama And madundung", price: 100, icon: "🔥", customWeight: 3.5 },
+                { name: "Burguro and Fruyuro", price: 135, icon: "🍔", customWeight: 3.0 },
+                { name: "Cash or Card", price: 120, icon: "💳", customWeight: 2.8 },
+                { name: "CapiTano moby", price: 200, icon: "🐋", customWeight: 1.2 },
+                { name: "cerberus", price: 300, icon: "🐕", customWeight: 0.6 },
+                { name: "Dragon Canelloni", price: 750, icon: "🐉", ultraRare: true, customWeight: 0.05 }
+            ]
+        };
+
+        let promoCodes = { 
+            "20132013": { reward: 100, maxUses: 50, uses: 0 }, 
+            "67": { reward: 1, maxUses: 999, uses: 0 }, 
+            "AKIRA7777": { reward: 10, maxUses: 10, uses: 0 }, 
+            "BRAINROTOKOK": { reward: 2, maxUses: 100, uses: 0 }, 
+            "5646": { reward: 1000, maxUses: 3, uses: 0 }, 
+            "TIKTOKUPDATE": { reward: 50, maxUses: 25, uses: 0 }, 
+            "LAVADIRATO6767675467": { reward: 50, maxUses: 5, uses: 0 } 
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCustomContent();
+            loadPromosFromStorage();
+            renderCasesGrid();
+            
+            loadGlobalRequestsFromFirebase();
+            setInterval(loadGlobalRequestsFromFirebase, 5000);
+
+            const savedUser = localStorage.getItem('akirabrain_current_user');
+            if (savedUser) {
+                loadUserData(savedUser);
+            } else {
+                document.getElementById('auth-modal').style.display = 'flex';
+            }
+        });
+
+        function loadCustomContent() {
+            const customCases = localStorage.getItem('akirabrain_custom_cases');
+            if (customCases) {
+                const parsed = JSON.parse(customCases);
+                Object.assign(defaultCasesData, parsed);
+            }
+
+            const customItems = localStorage.getItem('akirabrain_custom_items');
+            if (customItems) {
+                const parsed = JSON.parse(customItems);
+                for (let key in parsed) {
+                    if (!itemsData[key]) itemsData[key] = [];
+                    itemsData[key].push(...parsed[key]);
+                }
+            }
+        }
+
+        function loadPromosFromStorage() {
+            const savedPromos = localStorage.getItem('akirabrain_all_promocodes');
+            if (savedPromos) {
+                try {
+                    const parsed = JSON.parse(savedPromos);
+                    Object.assign(promoCodes, parsed);
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        function savePromosToStorage() {
+            localStorage.setItem('akirabrain_all_promocodes', JSON.stringify(promoCodes));
+            
+            fetch('https://akirabrainpet-default-rtdb.firebaseio.com/promoCodes.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(promoCodes)
+            }).catch(err => console.error("Ошибка сохранения промокодов в Firebase:", err));
+        }
+
+        function renderCasesGrid() {
+            const container = document.getElementById('cases-grid-container');
+            let html = '';
+            for (let key in defaultCasesData) {
+                const c = defaultCasesData[key];
+                const priceText = c.price === 0 ? "Бесплатно" : `${c.price} Braincoins`;
+                const borderColor = c.isAccent ? 'style="border-color: var(--accent);"' : '';
+                const titleColor = c.isAccent ? 'style="color: var(--accent);"' : '';
+                const btnStyle = c.isAccent ? 'style="background: linear-gradient(135deg, var(--accent), #00b386);"' : '';
+                const btnId = key === 'free' ? 'id="free-btn"' : '';
+                const clickAction = key === 'free' ? "selectCase('free')" : `selectCase('${key}')`;
+
+                html += `
+                <div class="case-card" ${borderColor}>
+                    <div>
+                        <img src="${c.img}" alt="${c.title}" class="case-img">
+                        <div class="case-title" ${titleColor}>${c.title}</div>
+                        <div class="case-price" id="${key === 'free' ? 'free-price-text' : ''}">${priceText}</div>
+                    </div>
+                    <button class="btn" ${btnId} ${btnStyle} onclick="${clickAction}">Открыть</button>
+                </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function registerUser() {
+            const input = document.getElementById('auth-input').value.trim();
+            const msg = document.getElementById('auth-msg');
+
+            if (input.length < 2) {
+                msg.className = "msg error";
+                msg.innerText = "Имя должно быть не менее 2 символов!";
+                return;
+            }
+
+            currentUser = input;
+            localStorage.setItem('akirabrain_current_user', input);
+            loadUserData(input);
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+
+        function getCurrentCleanUser() {
+            if (!currentUser) return null;
+            return currentUser.trim().toLowerCase().replace(/[.#$\[\]]/g, "_");
+        }
+
+        function loadUserData(username) {
+            currentUser = username;
+            localStorage.setItem('akirabrain_current_user', username);
+            
+            document.getElementById('current-username').innerText = username;
+            document.getElementById('profile-badge').style.display = 'flex';
+            
+            const cleanUser = getCurrentCleanUser();
+            const userBalanceUrl = `https://akirabrainpet-default-rtdb.firebaseio.com/users/${cleanUser}/balance.json`;
+
+            fetch(userBalanceUrl)
+                .then(res => res.json())
+                .then(data => {
+                    if (data !== null && data !== undefined) {
+                        balance = Number(data);
+                    } else {
+                        balance = 0;
+                        fetch(userBalanceUrl, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(0)
+                        });
+                    }
+                    document.getElementById('balance').innerText = balance;
+                })
+                .catch(() => {
+                    balance = 0;
+                    document.getElementById('balance').innerText = balance;
+                });
+
+            const userKey = `akirabrain_data_${username}`;
+            const savedData = localStorage.getItem(userKey);
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                inventory = parsed.inventory || [];
+                usedPromos = parsed.usedPromos || [];
+                freeCaseCooldownEnd = parsed.freeCaseCooldownEnd || 0;
+            } else {
+                inventory = [];
+                usedPromos = [];
+                freeCaseCooldownEnd = 0;
+                saveUserData();
+            }
+
+            const navRequestsBtn = document.getElementById('nav-requests-btn');
+            const navAdminContentBtn = document.getElementById('nav-admin-content-btn');
+
+            if (username.toLowerCase() === 'akira') {
+                navRequestsBtn.style.display = 'block';
+                navAdminContentBtn.style.display = 'block';
+            } else {
+                navRequestsBtn.style.display = 'none';
+                navAdminContentBtn.style.display = 'none';
+            }
+        }
+
+        function saveUserData() {
+            if (!currentUser) return;
+            const userKey = `akirabrain_data_${currentUser}`;
+            localStorage.setItem(userKey, JSON.stringify({ inventory, usedPromos, freeCaseCooldownEnd }));
+        }
+
+        function updateBalanceFirebase(amountChange, callback) {
+            const cleanUser = getCurrentCleanUser();
+            if (!cleanUser) {
+                if (callback) callback(false);
+                return;
+            }
+
+            const userBalanceUrl = `https://akirabrainpet-default-rtdb.firebaseio.com/users/${cleanUser}/balance.json`;
+
+            fetch(userBalanceUrl)
+                .then(res => res.json())
+                .then(currentBalance => {
+                    const current = (currentBalance !== null && currentBalance !== undefined) ? Number(currentBalance) : 0;
+                    const newBalance = current + amountChange;
+
+                    if (newBalance < 0) {
+                        alert(`Не хватает Braincoins! У тебя на балансе: ${current}, а нужно списать: ${Math.abs(amountChange)}.`);
+                        if (callback) callback(false);
+                        return;
+                    }
+
+                    return fetch(userBalanceUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newBalance)
+                    }).then(res => {
+                        if (!res.ok) throw new Error("Ошибка записи в базу");
+                        balance = newBalance;
+                        document.getElementById('balance').innerText = balance;
+                        if (callback) callback(true);
+                    });
+                })
+                .catch(err => {
+                    console.error("Firebase error:", err);
+                    alert("Ошибка связи с базой данных!");
+                    if (callback) callback(false);
+                });
+        }
+
+        function saveGlobalRequests() {
+            localStorage.setItem('akirabrain_all_global_requests', JSON.stringify(globalRequests));
+            
+            fetch('https://akirabrainpet-default-rtdb.firebaseio.com/globalRequests.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(globalRequests)
+            }).catch(err => console.error("Ошибка сохранения заявок в Firebase:", err));
+        }
+
+        function loadGlobalRequestsFromFirebase() {
+            fetch('https://akirabrainpet-default-rtdb.firebaseio.com/globalRequests.json')
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        globalRequests = Array.isArray(data) ? data : Object.values(data);
+                    } else {
+                        globalRequests = [];
+                    }
+                    if (document.getElementById('requests').classList.contains('active')) {
+                        renderRequestsTable();
+                    }
+                })
+                .catch(() => {
+                    const savedGlobal = localStorage.getItem('akirabrain_all_global_requests');
+                    if (savedGlobal) {
+                        globalRequests = JSON.parse(savedGlobal);
+                    }
+                });
+        }
+
+        setInterval(() => {
+            const now = Date.now();
+            const btn = document.getElementById('free-btn');
+            const priceText = document.getElementById('free-price-text');
+            if (btn && priceText) {
+                if (now < freeCaseCooldownEnd) {
+                    const diff = Math.ceil((freeCaseCooldownEnd - now) / 1000);
+                    const hours = Math.floor(diff / 3600);
+                    const minutes = Math.floor((diff % 3600) / 60);
+                    const seconds = diff % 60;
+                    btn.disabled = true;
+                    priceText.innerText = `Доступно через ${hours}ч ${minutes}м ${seconds}с`;
+                } else {
+                    btn.disabled = false;
+                    priceText.innerText = `Бесплатно`;
+                }
+            }
+        }, 1000);
+
+        function switchTab(tabId, event) {
+            if ((tabId === 'requests' || tabId === 'admin-content') && (!currentUser || currentUser.toLowerCase() !== 'akira')) {
+                return;
+            }
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            if(event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+            
+            if(tabId === 'inventory') renderInventory();
+            if(tabId === 'profile') renderProfileTab();
+            if(tabId === 'upgrader') initUpgraderTab();
+            if(tabId === 'fuse') initFuseTab();
+            if(tabId === 'requests') {
+                loadGlobalRequestsFromFirebase();
+                renderRequestsTable();
+            }
+            if(tabId === 'admin-content') initAdminContentPanel();
+        }
+
+        function renderProfileTab() {
+            if (currentUser) {
+                const depNick = document.getElementById('deposit-roblox-nick');
+                if (!depNick.value) depNick.value = currentUser;
+                const withNick = document.getElementById('withdraw-roblox-nick');
+                if (!withNick.value) withNick.value = currentUser;
+            }
+            if (!document.getElementById('withdraw-time-input').value) {
+                document.getElementById('withdraw-time-input').value = "Сегодня в 20:10";
+            }
+            renderWithdrawPicker();
+            updateWithdrawSelectionInfo();
+        }
+
+        function sendDepositRequest() {
+            const nick = document.getElementById('deposit-roblox-nick').value.trim();
+            const selectEl = document.getElementById('deposit-item-select');
+            const msg = document.getElementById('deposit-msg');
+
+            if (!nick) {
+                msg.className = "msg error";
+                msg.innerText = "Укажите ник в Roblox!";
+                return;
+            }
+
+            if (!selectEl.value) {
+                msg.className = "msg error";
+                msg.innerText = "Выберите предмет для пополнения!";
+                return;
+            }
+
+            const [itemName, itemPriceStr, itemIcon] = selectEl.value.split('|');
+            const itemPrice = parseInt(itemPriceStr);
+            const createdTimeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            globalRequests.unshift({
+                id: Date.now() + Math.random(),
+                type: 'deposit',
+                user: currentUser,
+                nick: nick,
+                tradeTime: '20:00-20:20',
+                item: `${itemIcon} ${itemName} (${itemPrice} 🪙)`,
+                rewardCoins: itemPrice,
+                time: createdTimeString,
+                status: 'pending'
+            });
+            saveGlobalRequests();
+
+            msg.className = "msg success";
+            msg.innerText = "Заявка создана! Будьте в игре с 20:00 до 20:20 и готовьтесь принять трейд.";
+            setTimeout(() => { msg.innerText = ""; }, 5000);
+        }
+
+        function getRandomItem(pool) {
+            const weightedPool = [];
+            pool.forEach(item => {
+                let weight = item.customWeight !== undefined ? item.customWeight : Math.max(2, Math.round(85 / item.price));
+                if (item.rare && item.customWeight === undefined) weight = 1.5;
+                if (item.ultraRare && item.customWeight === undefined) weight = 0.5; 
+                for(let i = 0; i < Math.max(1, Math.floor(weight * 1000)); i++) weightedPool.push(item);
+            });
+            return weightedPool[Math.floor(Math.random() * weightedPool.length)];
+        }
+
+        function selectCase(caseKey) {
+            if (caseKey === 'free') {
+                if (Date.now() < freeCaseCooldownEnd) return;
+                currentSelectedCase = 'free';
+                startOpening(1);
+                return;
+            }
+            currentSelectedCase = caseKey;
+            document.getElementById('qty-modal-title').innerText = `${defaultCasesData[caseKey].title}`;
+            document.getElementById('qty-modal').style.display = 'flex';
+        }
+
+        function closeQtyModal() { document.getElementById('qty-modal').style.display = 'none'; }
+
+        function startOpening(qty) {
+            closeQtyModal();
+            const caseKey = currentSelectedCase;
+            const price = defaultCasesData[caseKey].price * qty;
+
+            if (caseKey === 'free') {
+                freeCaseCooldownEnd = Date.now() + 24 * 3600000;
+                saveUserData();
+                wonItemsQueue = [];
+                const pool = itemsData[caseKey] || itemsData['free'];
+                wonItemsQueue.push(getRandomItem(pool));
+                openNextInQueue();
+            } else {
+                updateBalanceFirebase(-price, (success) => {
+                    if (!success) return;
+                    wonItemsQueue = [];
+                    const pool = itemsData[caseKey] || itemsData['free'];
+                    for (let i = 0; i < qty; i++) wonItemsQueue.push(getRandomItem(pool));
+                    openNextInQueue();
+                });
+            }
+        }
+
+        function openNextInQueue() {
+            if (wonItemsQueue.length === 0) return;
+            const winningItem = wonItemsQueue[0];
+            const pool = itemsData[currentSelectedCase] || itemsData['free'];
+
+            const track = document.getElementById('roulette-track');
+            track.innerHTML = '';
+            const winningIndex = 70;
+            let itemsHTML = '';
+            for(let i = 0; i < 80; i++) {
+                const item = (i === winningIndex) ? winningItem : pool[Math.floor(Math.random() * pool.length)];
+                itemsHTML += `<div class="roulette-item"><div style="font-size: 2.8rem;">${item.icon}</div><div class="roulette-item-name">${item.name}</div><div class="roulette-item-price">${item.price} 🪙</div></div>`;
+            }
+            track.innerHTML = itemsHTML;
+
+            document.getElementById('modal-case-title').innerText = `Открытие кейса (осталось: ${wonItemsQueue.length})`;
+            document.getElementById('modal-results-container').innerHTML = '';
+            document.getElementById('roulette-modal').style.display = 'flex';
+
+            if (spinAnimationId) cancelAnimationFrame(spinAnimationId);
+
+            setTimeout(() => {
+                const itemWidth = 160;
+                const containerWidth = document.getElementById('track-container').clientWidth;
+                const targetPixel = (winningIndex * itemWidth) - (containerWidth / 2) + (10 + Math.random() * (itemWidth - 20));
+                let currentPixel = 0, startTime = null, duration = 9500;
+
+                function animateSpin(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    let progress = (timestamp - startTime) / duration;
+                    if (progress > 1) progress = 1;
+                    currentPixel = targetPixel * (1 - Math.pow(1 - progress, 3));
+                    track.style.transform = `translate3d(-${currentPixel}px, 0, 0)`;
+
+                    if (progress < 1) {
+                        spinAnimationId = requestAnimationFrame(animateSpin);
+                    } else {
+                        const currentItem = wonItemsQueue.shift();
+                        const uniqueId = Date.now() + Math.random();
+                        document.getElementById('modal-results-container').innerHTML = `
+                            <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: var(--accent);">
+                                Выиграно: ${currentItem.icon} ${currentItem.name} (${currentItem.price} 🪙)
+                            </div>
+                            <div class="modal-actions">
+                                <button class="btn" onclick="actionKeep('${currentItem.name}', ${currentItem.price}, '${currentItem.icon}', '${uniqueId}')">Забрать в инвентарь</button>
+                                <button class="btn" style="background: rgba(255, 71, 87, 0.2); color: var(--danger); border: 1px solid var(--danger);" onclick="actionSellNow(${currentItem.price})">Продать сразу (${currentItem.price} 🪙)</button>
+                            </div>
+                        `;
+                    }
+                }
+                spinAnimationId = requestAnimationFrame(animateSpin);
+            }, 50);
+        }
+
+        function actionKeep(name, price, icon, id) { 
+            inventory.push({ name, price, icon, id, locked: false }); 
+            saveUserData(); 
+            proceedNextOrClose(); 
+        }
+
+        function actionSellNow(price) { 
+            updateBalanceFirebase(price, (success) => {
+                if (success) proceedNextOrClose();
+            }); 
+        }
+
+        function proceedNextOrClose() { 
+            if (wonItemsQueue.length > 0) openNextInQueue(); 
+            else document.getElementById('roulette-modal').style.display = 'none'; 
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            if(inventory.length === 0) { grid.innerHTML = '<div class="empty-text">Ваш инвентарь пуст. Откройте кейсы!</div>'; return; }
+            let html = '';
+            inventory.forEach((item, index) => {
+                const lockedClass = item.locked ? 'locked' : '';
+                const lockBadge = item.locked ? '<div class="lock-badge">🔒 Под замком</div>' : '';
+                const sellBtn = item.locked ? '' : `<button class="btn-sell" onclick="sellItem(${index})">Продать</button>`;
+                
+                html += `<div class="inv-card ${lockedClass}">
+                    ${lockBadge}
+                    <div>
+                        <div style="font-size: 2.2rem; margin-bottom: 5px;">${item.icon}</div>
+                        <div class="inv-item-name">${item.name}</div>
+                        <div class="inv-item-price">${item.price} 🪙</div>
+                    </div>
+                    ${sellBtn}
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        function sellItem(index) {
+            if (inventory[index].locked) return;
+            const itemPrice = inventory[index].price;
+            updateBalanceFirebase(itemPrice, (success) => {
+                if (success) {
+                    inventory.splice(index, 1);
+                    saveUserData();
+                    renderInventory();
+                }
+            });
+        }
+
+        function renderWithdrawPicker() {
+            const picker = document.getElementById('withdraw-inventory-picker');
+            const availableItems = inventory.map((item, idx) => ({ ...item, originalIndex: idx }))
+                                              .filter(item => item.price >= 50 && !item.locked);
+
+            if (availableItems.length === 0) {
+                picker.innerHTML = '<div class="empty-text" style="grid-column: 1/-1; padding: 15px; font-size: 0.8rem;">Нет предметов от 50 🪙</div>';
+                selectedWithdrawIndex = null;
+                updateWithdrawSelectionInfo();
+                return;
+            }
+
+            let html = '';
+            availableItems.forEach((item) => {
+                const isSelected = (selectedWithdrawIndex === item.originalIndex) ? 'selected' : '';
+                html += `<div class="inv-card ${isSelected}" style="padding: 6px;" onclick="selectItemForWithdraw(${item.originalIndex})">
+                    <div style="font-size: 1.3rem;">${item.icon}</div>
+                    <div class="inv-item-name" style="font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
+                </div>`;
+            });
+            picker.innerHTML = html;
+        }
+
+        function selectItemForWithdraw(index) {
+            selectedWithdrawIndex = index;
+            renderWithdrawPicker();
+            updateWithdrawSelectionInfo();
+        }
+
+        function updateWithdrawSelectionInfo() {
+            const infoEl = document.getElementById('selected-withdraw-item-info');
+            if (selectedWithdrawIndex !== null && inventory[selectedWithdrawIndex]) {
+                const item = inventory[selectedWithdrawIndex];
+                infoEl.innerHTML = `Выбранный предмет: <span style="color: var(--warning); font-weight: bold;">${item.icon} ${item.name} (${item.price} 🪙)</span>`;
+            } else {
+                infoEl.innerHTML = `Выбранный предмет: <span style="color: var(--warning); font-weight: bold;">Не выбран</span>`;
+            }
+        }
+
+        function sendWithdrawRequest() {
+            const nick = document.getElementById('withdraw-roblox-nick').value.trim();
+            const tradeTime = document.getElementById('withdraw-time-input').value.trim();
+            const msg = document.getElementById('withdraw-msg');
+
+            if (!nick) {
+                msg.className = "msg error";
+                msg.innerText = "Укажите ник в Roblox!";
+                return;
+            }
+
+            if (!tradeTime) {
+                msg.className = "msg error";
+                msg.innerText = "Укажите удобное время для трейда!";
+                return;
+            }
+
+            if (selectedWithdrawIndex === null || !inventory[selectedWithdrawIndex] || inventory[selectedWithdrawIndex].price < 50) {
+                msg.className = "msg error";
+                msg.innerText = "Выберите предмет стоимостью от 50 коинов!";
+                return;
+            }
+
+            const itemToWithdraw = inventory[selectedWithdrawIndex];
+            itemToWithdraw.locked = true;
+
+            const createdTimeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            globalRequests.unshift({
+                id: Date.now() + Math.random(),
+                type: 'withdraw',
+                user: currentUser,
+                inventoryIndex: selectedWithdrawIndex,
+                nick: nick,
+                tradeTime: tradeTime,
+                item: `${itemToWithdraw.icon} ${itemToWithdraw.name} (${itemToWithdraw.price} 🪙)`,
+                time: createdTimeString,
+                status: 'pending'
+            });
+            saveGlobalRequests();
+
+            selectedWithdrawIndex = null;
+            saveUserData();
+            renderProfileTab();
+
+            msg.className = "msg success";
+            msg.innerText = "Заявка на вывод отправлена, предмет заблокирован под замком!";
+            setTimeout(() => { msg.innerText = ""; }, 3000);
+        }
+
+        function initFuseTab() {
+            selectedFuseIndices = [];
+            renderFusePicker();
+            updateFuseStats();
+        }
+
+        function renderFusePicker() {
+            const grid = document.getElementById('fuse-inventory-grid');
+            const usableItems = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
+
+            if (usableItems.length === 0) {
+                grid.innerHTML = '<div class="empty-text">Нет доступных предметов для фьюза (все под замком или инвентарь пуст)</div>';
+                selectedFuseIndices = [];
+                updateFuseStats();
+                return;
+            }
+
+            let html = '';
+            usableItems.forEach((item) => {
+                const isSelected = selectedFuseIndices.includes(item.originalIndex) ? 'selected' : '';
+                html += `<div class="inv-card ${isSelected}" style="padding: 8px;" onclick="toggleFuseItem(${item.originalIndex})">
+                    <div>
+                        <div style="font-size: 1.8rem; margin-bottom: 2px;">${item.icon}</div>
+                        <div class="inv-item-name" style="font-size: 0.8rem;">${item.name}</div>
+                        <div class="inv-item-price" style="font-size: 0.75rem;">${item.price} 🪙</div>
+                    </div>
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        function toggleFuseItem(index) {
+            if (inventory[index].locked) return;
+            const pos = selectedFuseIndices.indexOf(index);
+            if (pos > -1) {
+                selectedFuseIndices.splice(pos, 1);
+            } else {
+                if (selectedFuseIndices.length >= 10) {
+                    alert("Максимум можно выбрать 10 предметов для фьюза!");
+                    return;
+                }
+                selectedFuseIndices.push(index);
+            }
+            renderFusePicker();
+            updateFuseStats();
+        }
+
+        function updateFuseStats() {
+            const countEl = document.getElementById('fuse-count');
+            const priceEl = document.getElementById('fuse-total-price');
+            const btn = document.getElementById('fuse-action-btn');
+
+            countEl.innerText = selectedFuseIndices.length;
+            let totalPrice = 0;
+            selectedFuseIndices.forEach(idx => {
+                if (inventory[idx]) totalPrice += inventory[idx].price;
+            });
+            priceEl.innerText = totalPrice + ' 🪙';
+
+            if (selectedFuseIndices.length >= 3 && selectedFuseIndices.length <= 10) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function executeFuse() {
+            if (selectedFuseIndices.length < 3) return;
+
+            let totalPrice = 0;
+            selectedFuseIndices.forEach(idx => {
+                if (inventory[idx]) totalPrice += inventory[idx].price;
+            });
+
+            selectedFuseIndices.sort((a, b) => b - a);
+            selectedFuseIndices.forEach(idx => {
+                inventory.splice(idx, 1);
+            });
+
+            let allPools = [];
+            Object.values(itemsData).forEach(pool => pool.forEach(it => {
+                if (!allPools.some(x => x.name === it.name)) allPools.push(it);
+            }));
+
+            let minPriceBound = 1;
+            let maxPriceBound = 300;
+
+            if (totalPrice >= 180) {
+                minPriceBound = 75;
+                maxPriceBound = 500;
+            } else if (totalPrice >= 80) {
+                minPriceBound = 25;
+                maxPriceBound = 300;
+            } else {
+                minPriceBound = 1;
+                maxPriceBound = Math.max(50, totalPrice * 2);
+            }
+
+            let filteredPool = allPools.filter(it => it.price >= minPriceBound && it.price <= maxPriceBound);
+            if (filteredPool.length === 0) filteredPool = allPools;
+
+            const rewardItem = filteredPool[Math.floor(Math.random() * filteredPool.length)];
+            const newItem = {
+                name: rewardItem.name,
+                price: rewardItem.price,
+                icon: rewardItem.icon,
+                id: Date.now() + Math.random(),
+                locked: false
+            };
+
+            inventory.push(newItem);
+            saveUserData();
+            initFuseTab();
+            renderInventory();
+
+            document.getElementById('upgrade-modal-result-text').innerHTML = `
+                <span style="color: var(--accent);">ФЬЮЗ УСПЕШЕН! Вы отдали предметы общей стоимостью ${totalPrice} 🪙 и получили:</span><br><br>
+                <div style="font-size: 2.5rem; margin: 10px 0;">${newItem.icon}</div>
+                <div style="color: var(--warning);">${newItem.name} (${newItem.price} 🪙)</div>
+            `;
+            document.getElementById('upgrade-result-modal').style.display = 'flex';
+        }
+
+        // COLOR DICE LOGIC
+        const diceColors = [
+            { name: "red", hex: "#ff4757" },
+            { name: "yellow", hex: "#ffa502" },
+            { name: "orange", hex: "#ff7f50" },
+            { name: "blue", hex: "#3742fa" },
+            { name: "green", hex: "#2ed573" },
+            { name: "purple", hex: "#9b59b6" }
+        ];
+
+        function setDiceBet(action) {
+            const input = document.getElementById('dice-bet-amount');
+            let val = parseInt(input.value) || 0;
+            if (action === 'half') val = Math.max(1, Math.floor(val / 2));
+            if (action === 'double') val = val * 2;
+            if (action === 'max') val = balance;
+            if (action === 'clear') val = 0;
+            input.value = val;
+        }
+
+        function playColorDice() {
+            const input = document.getElementById('dice-bet-amount');
+            const msg = document.getElementById('dice-result-msg');
+            const bet = parseInt(input.value);
+
+            if (isNaN(bet) || bet <= 0) {
+                msg.className = "msg error";
+                msg.innerText = "Введите корректную ставку!";
+                return;
+            }
+
+            if (bet > balance) {
+                msg.className = "msg error";
+                msg.innerText = "Недостаточно Braincoins на балансе!";
+                return;
+            }
+
+            updateBalanceFirebase(-bet, (success) => {
+                if (!success) return;
+
+                let rolledColors = [];
+                for (let i = 0; i < 4; i++) {
+                    const rnd = diceColors[Math.floor(Math.random() * diceColors.length)];
+                    rolledColors.push(rnd);
+                }
+
+                for (let i = 0; i < 4; i++) {
+                    const dieEl = document.getElementById(`die-${i}`);
+                    dieEl.style.backgroundColor = rolledColors[i].hex;
+                    dieEl.style.transform = "scale(1.15) rotate(" + (Math.random() * 20 - 10) + "deg)";
+                    setTimeout(() => { dieEl.style.transform = "scale(1) rotate(0deg)"; }, 300);
+                }
+
+                const uniqueColorsCount = new Set(rolledColors.map(c => c.name)).size;
+                
+                let winMultiplier = 0;
+                if (uniqueColorsCount === 1) {
+                    winMultiplier = 3; // 1 уникальный цвет (4 одинаковых) -> x3
+                } else if (uniqueColorsCount === 4) {
+                    winMultiplier = 2; // 4 уникальных цвета (4 разных) -> x2
+                } else {
+                    winMultiplier = 0; // 2 или 3 цвета -> Проигрыш (L)
+                }
+
+                if (winMultiplier > 0) {
+                    const prize = bet * winMultiplier;
+                    updateBalanceFirebase(prize, (addSuccess) => {
+                        if (addSuccess) {
+                            msg.className = "msg success";
+                            msg.innerText = `УСПЕХ! Уникальных цветов: ${uniqueCountText(uniqueColorsCount)}. Вы выиграли ${prize} 🪙 (x${winMultiplier})!`;
+                        }
+                    });
+                } else {
+                    msg.className = "msg error";
+                    msg.innerText = `ПРОИГРЫШ (L)! Уникальных цветов: ${uniqueCountText(uniqueColorsCount)}. Ставка сгорела.`;
+                }
+            });
+        }
+
+        function uniqueCountText(count) {
+            if (count === 1) return "4 одинаковых (1 цвет)";
+            if (count === 4) return "4 разных (4 цвета)";
+            return `${count} цвета`;
+        }
+
+        function renderRequestsTable() {
+            const container = document.getElementById('requests-container');
+            if (globalRequests.length === 0) {
+                container.innerHTML = '<div class="empty-text">Пока нет ни одной заявки</div>';
+                return;
+            }
+
+            let html = `<table class="requests-table">
+                <thead>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Игрок / Ник</th>
+                        <th>Время трейда</th>
+                        <th>Предмет</th>
+                        <th>Статус / Действия</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            globalRequests.forEach(req => {
+                const typeBadge = req.type === 'deposit' 
+                    ? '<span style="color: var(--warning); font-weight: bold;">💳 Пополнение</span>' 
+                    : '<span style="color: var(--accent); font-weight: bold;">📥 Вывод</span>';
+
+                let statusBlock = '';
+                if (req.status === 'approved') {
+                    statusBlock = `<span style="color: #22c55e; font-weight: bold;">✓ Подтверждено</span>`;
+                } else if (req.status === 'rejected') {
+                    statusBlock = `<span style="color: var(--danger); font-weight: bold;">✕ Отклонено</span>`;
+                } else {
+                    statusBlock = `
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-sell" style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border-color: #22c55e; padding: 5px 10px;" onclick="handleRequestAction('${req.id}', 'approve')">Подтвердить</button>
+                            <button class="btn-sell" style="padding: 5px 10px;" onclick="handleRequestAction('${req.id}', 'reject')">Отклонить</button>
+                        </div>
+                    `;
+                }
+
+                html += `<tr>
+                    <td>${typeBadge}</td>
+                    <td style="font-weight: bold; color: var(--text);">${req.user}<br><span style="font-size: 0.8rem; color: var(--text-secondary);">(${req.nick})</span></td>
+                    <td style="font-weight: bold; color: var(--warning);">${req.tradeTime}</td>
+                    <td>${req.item}</td>
+                    <td>${statusBlock}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function handleRequestAction(reqId, action) {
+            const req = globalRequests.find(r => r.id == reqId);
+            if (!req) return;
+
+            if (action === 'approve') {
+                req.status = 'approved';
+                if (req.type === 'deposit') {
+                    const cleanTargetUser = req.user.trim().toLowerCase().replace(/[.#$\[\]]/g, "_");
+                    const userBalanceUrl = `https://akirabrainpet-default-rtdb.firebaseio.com/users/${cleanTargetUser}/balance.json`;
+                    
+                    fetch(userBalanceUrl)
+                        .then(res => res.json())
+                        .then(currentBalance => {
+                            const current = (currentBalance !== null && currentBalance !== undefined) ? Number(currentBalance) : 0;
+                            const newBalance = current + req.rewardCoins;
+                            return fetch(userBalanceUrl, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(newBalance)
+                            });
+                        }).then(() => {
+                            if (currentUser === req.user) {
+                                loadUserData(currentUser);
+                            }
+                        });
+                } else if (req.type === 'withdraw') {
+                    const targetKey = `akirabrain_data_${req.user}`;
+                    const targetDataStr = localStorage.getItem(targetKey);
+                    if (targetDataStr) {
+                        let targetData = JSON.parse(targetDataStr);
+                        if (targetData.inventory && targetData.inventory[req.inventoryIndex]) {
+                            targetData.inventory.splice(req.inventoryIndex, 1);
+                            localStorage.setItem(targetKey, JSON.stringify(targetData));
+                            if (currentUser === req.user) {
+                                inventory = targetData.inventory;
+                                renderInventory();
+                            }
+                        }
+                    }
+                }
+            } else if (action === 'reject') {
+                req.status = 'rejected';
+                if (req.type === 'withdraw') {
+                    const targetKey = `akirabrain_data_${req.user}`;
+                    const targetDataStr = localStorage.getItem(targetKey);
+                    if (targetDataStr) {
+                        let targetData = JSON.parse(targetDataStr);
+                        if (targetData.inventory && targetData.inventory[req.inventoryIndex]) {
+                            targetData.inventory[req.inventoryIndex].locked = false;
+                            localStorage.setItem(targetKey, JSON.stringify(targetData));
+                            if (currentUser === req.user) {
+                                inventory = targetData.inventory;
+                                renderInventory();
+                            }
+                        }
+                    }
+                }
+            }
+            saveGlobalRequests();
+            renderRequestsTable();
+        }
+
+        function clearAllRequests() {
+            if (confirm("Очистить весь список заявок?")) {
+                globalRequests = [];
+                saveGlobalRequests();
+                renderRequestsTable();
+            }
+        }
+
+        function initAdminContentPanel() {
+            const select = document.getElementById('admin-case-target');
+            select.innerHTML = '';
+            for (let key in defaultCasesData) {
+                select.innerHTML += `<option value="${key}">${defaultCasesData[key].title} (${key})</option>`;
+            }
+        }
+
+        function adminAddNewBrainrot() {
+            const caseKey = document.getElementById('admin-case-target').value;
+            const name = document.getElementById('admin-item-name').value.trim();
+            const price = parseInt(document.getElementById('admin-item-price').value);
+            const icon = document.getElementById('admin-item-icon').value.trim();
+            const msg = document.getElementById('admin-item-msg');
+
+            if (!name || isNaN(price) || !icon) {
+                msg.className = "msg error";
+                msg.innerText = "Заполните все поля корректно!";
+                return;
+            }
+
+            const newItem = { name, price, icon };
+            if (!itemsData[caseKey]) itemsData[caseKey] = [];
+            itemsData[caseKey].push(newItem);
+
+            let customItems = JSON.parse(localStorage.getItem('akirabrain_custom_items') || '{}');
+            if (!customItems[caseKey]) customItems[caseKey] = [];
+            customItems[caseKey].push(newItem);
+            localStorage.setItem('akirabrain_custom_items', JSON.stringify(customItems));
+
+            msg.className = "msg success";
+            msg.innerText = `Брейнрот "${name}" успешно добавлен в кейс ${caseKey}!`;
+            document.getElementById('admin-item-name').value = '';
+            document.getElementById('admin-item-price').value = '';
+            document.getElementById('admin-item-icon').value = '';
+            setTimeout(() => { msg.innerText = ''; }, 4000);
+        }
+
+        function adminAddNewCase() {
+            const key = document.getElementById('admin-case-key').value.trim().toLowerCase();
+            const title = document.getElementById('admin-case-title').value.trim();
+            const price = parseInt(document.getElementById('admin-case-price').value);
+            const img = document.getElementById('admin-case-img').value.trim();
+            const msg = document.getElementById('admin-case-msg');
+
+            if (!key || !title || isNaN(price) || !img) {
+                msg.className = "msg error";
+                msg.innerText = "Заполните все поля для кейса!";
+                return;
+            }
+
+            if (defaultCasesData[key]) {
+                msg.className = "msg error";
+                msg.innerText = "Кейс с таким ключом уже существует!";
+                return;
+            }
+
+            const newCaseObj = { title, price, img };
+            defaultCasesData[key] = newCaseObj;
+            itemsData[key] = [
+                { name: "Starter Brain", price: Math.max(1, Math.floor(price / 5)), icon: "🧠" },
+                { name: "Pro Brainrot", price: Math.floor(price / 2), icon: "🔥" }
+            ];
+
+            let customCases = JSON.parse(localStorage.getItem('akirabrain_custom_cases') || '{}');
+            customCases[key] = newCaseObj;
+            localStorage.setItem('akirabrain_custom_cases', JSON.stringify(customCases));
+
+            let customItems = JSON.parse(localStorage.getItem('akirabrain_custom_items') || '{}');
+            customItems[key] = itemsData[key];
+            localStorage.setItem('akirabrain_custom_items', JSON.stringify(customItems));
+
+            renderCasesGrid();
+            initAdminContentPanel();
+
+            msg.className = "msg success";
+            msg.innerText = `Кейс "${title}" успешно создан!`;
+            document.getElementById('admin-case-key').value = '';
+            document.getElementById('admin-case-title').value = '';
+            document.getElementById('admin-case-price').value = '';
+            document.getElementById('admin-case-img').value = '';
+            setTimeout(() => { msg.innerText = ''; }, 4000);
+        }
+
+        function adminAddNewPromo() {
+            const codeInput = document.getElementById('admin-promo-code').value.trim().toUpperCase();
+            const rewardInput = parseInt(document.getElementById('admin-promo-reward').value);
+            const limitInput = parseInt(document.getElementById('admin-promo-limit').value);
+            const msg = document.getElementById('admin-promo-msg');
+
+            if (!codeInput || isNaN(rewardInput) || isNaN(limitInput)) {
+                msg.className = "msg error";
+                msg.innerText = "Заполните все поля промокода корректно!";
+                return;
+            }
+
+            if (promoCodes[codeInput]) {
+                msg.className = "msg error";
+                msg.innerText = "Промокод с таким именем уже существует!";
+                return;
+            }
+
+            promoCodes[codeInput] = {
+                reward: rewardInput,
+                maxUses: limitInput,
+                uses: 0
+            };
+
+            savePromosToStorage();
+
+            msg.className = "msg success";
+            msg.innerText = `Промокод "${codeInput}" успешно создан (Лимит: ${limitInput}, Награда: ${rewardInput} 🪙)!`;
+            document.getElementById('admin-promo-code').value = '';
+            document.getElementById('admin-promo-reward').value = '';
+            document.getElementById('admin-promo-limit').value = '';
+            setTimeout(() => { msg.innerText = ''; }, 4000);
+        }
+
+        function initUpgraderTab() {
+            upgraderPickerMode = 'source';
+            document.getElementById('upgrader-picker-title').innerText = '🎒 Выберите вашу ставку';
+            document.getElementById('upgrader-mode-indicator').innerText = 'Режим: Выбор ставки';
+            renderUpgraderPicker();
+            updateUpgraderSlotsUI();
+        }
+
+        function openUpgraderSelector(mode) {
+            upgraderPickerMode = mode;
+            if(mode === 'source') {
+                document.getElementById('upgrader-picker-title').innerText = '🎒 Выберите вашу ставку';
+                document.getElementById('upgrader-mode-indicator').innerText = 'Режим: Выбор ставки';
+                renderUpgraderPicker();
+            } else {
+                document.getElementById('upgrader-picker-title').innerText = '🎁 Выберите желаемый приз';
+                document.getElementById('upgrader-mode-indicator').innerText = 'Режим: Выбор приза';
+                renderTargetPoolPicker();
+            }
+        }
+
+        function setTargetChance(chance) {
+            if(chance > 80) chance = 80;
+            selectedDesiredChance = chance;
+            
+            document.querySelectorAll('.chance-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.textContent.includes(chance + '%')) btn.classList.add('active');
+            });
+
+            if (upgraderSourceIndex !== null && inventory[upgraderSourceIndex]) {
+                autoSelectTargetByChance(chance);
+            } else {
+                updateUpgraderSlotsUI();
+            }
+        }
+
+        function renderUpgraderPicker() {
+            const grid = document.getElementById('upgrader-inventory-grid');
+            const usableItems = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
+
+            if(usableItems.length === 0) {
+                grid.innerHTML = '<div class="empty-text">Нет доступных предметов (возможно, они под замком или инвентарь пуст)</div>';
+                upgraderSourceIndex = null;
+                updateUpgraderSlotsUI();
+                return;
+            }
+            if(upgraderSourceIndex !== null && (upgraderSourceIndex >= inventory.length || inventory[upgraderSourceIndex].locked)) {
+                upgraderSourceIndex = null;
+            }
+
+            let html = '';
+            inventory.forEach((item, index) => {
+                if (item.locked) return;
+                const isSelected = (upgraderSourceIndex === index) ? 'selected' : '';
+                html += `<div class="inv-card ${isSelected}" onclick="pickSourceItem(${index})"><div><div style="font-size: 2.0rem; margin-bottom: 5px;">${item.icon}</div><div class="inv-item-name">${item.name}</div><div class="inv-item-price">${item.price} 🪙</div></div></div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        function renderTargetPoolPicker() {
+            const grid = document.getElementById('upgrader-inventory-grid');
+            let allPools = [];
+            Object.values(itemsData).forEach(pool => pool.forEach(it => { if(!allPools.some(x => x.name === it.name)) allPools.push(it); }));
+            allPools.sort((a, b) => a.price - b.price);
+
+            if(allPools.length === 0) { grid.innerHTML = '<div class="empty-text">Нет доступных призов</div>'; return; }
+
+            let html = '';
+            allPools.forEach((item) => {
+                const isSelected = (upgraderTargetItem && upgraderTargetItem.name === item.name) ? 'selected' : '';
+                html += `<div class="inv-card ${isSelected}" onclick="pickTargetItem('${item.name}', ${item.price}, '${item.icon}')"><div><div style="font-size: 2.0rem; margin-bottom: 5px;">${item.icon}</div><div class="inv-item-name">${item.name}</div><div class="inv-item-price">${item.price} 🪙</div></div></div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        function pickSourceItem(index) {
+            upgraderSourceIndex = index;
+            renderUpgraderPicker();
+            autoSelectTargetByChance(selectedDesiredChance);
+        }
+
+        function autoSelectTargetByChance(chance) {
+            if (upgraderSourceIndex === null || !inventory[upgraderSourceIndex]) return;
+            const sourcePrice = inventory[upgraderSourceIndex].price;
+            let idealTargetPrice = sourcePrice / (chance / 100);
+
+            let allPools = [];
+            Object.values(itemsData).forEach(pool => pool.forEach(it => { if(!allPools.some(x => x.name === it.name)) allPools.push(it); }));
+            allPools.sort((a, b) => Math.abs(a.price - idealTargetPrice) - Math.abs(b.price - idealTargetPrice));
+
+            let validItems = allPools.filter(i => i.price >= sourcePrice);
+            if(validItems.length > 0) {
+                upgraderTargetItem = validItems[0];
+            } else {
+                upgraderTargetItem = allPools[0];
+            }
+            updateUpgraderSlotsUI();
+        }
+
+        function pickTargetItem(name, price, icon) {
+            upgraderTargetItem = { name, price, icon };
+            renderTargetPoolPicker();
+            updateUpgraderSlotsUI();
+        }
+
+        function updateUpgraderSlotsUI() {
+            const sourceSlot = document.getElementById('upgrader-source-slot');
+            const targetSlot = document.getElementById('upgrader-target-slot');
+            const actionBtn = document.getElementById('upgrade-action-btn');
+            const ring = document.getElementById('wheel-success-ring');
+            const centerIcon = document.getElementById('wheel-center-icon');
+            const centerText = document.getElementById('wheel-center-text');
+
+            let sourcePrice = 0, targetPrice = 0, currentChance = 0, multiplier = 1.00;
+            const circumference = 251.2;
+
+            if(upgraderSourceIndex !== null && inventory[upgraderSourceIndex]) {
+                const src = inventory[upgraderSourceIndex];
+                sourceSlot.className = "upgrader-slot filled";
+                sourceSlot.innerHTML = `<div style="font-size: 2.0rem; margin-bottom: 2px;">${src.icon}</div><div style="font-weight: bold; font-size: 0.85rem;">${src.name}</div><div style="color: var(--warning); font-size: 0.8rem;">${src.price} 🪙</div>`;
+                sourcePrice = src.price;
+                centerIcon.innerText = src.icon;
+            } else {
+                sourceSlot.className = "upgrader-slot";
+                sourceSlot.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать ставку</span>';
+                centerIcon.innerText = '⚡';
+            }
+
+            if(upgraderTargetItem) {
+                targetSlot.className = "upgrader-slot filled";
+                targetSlot.innerHTML = `<div style="font-size: 2.0rem; margin-bottom: 2px;">${upgraderTargetItem.icon}</div><div style="font-weight: bold; font-size: 0.85rem;">${upgraderTargetItem.name}</div><div style="color: var(--warning); font-size: 0.8rem;">${upgraderTargetItem.price} 🪙</div>`;
+                targetPrice = upgraderTargetItem.price;
+            } else {
+                targetSlot.className = "upgrader-slot";
+                targetSlot.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать приз</span>';
+            }
+
+            if(sourcePrice > 0 && targetPrice > 0) {
+                currentChance = sourcePrice >= targetPrice ? 80 : (sourcePrice / targetPrice) * 100;
+                if(currentChance > 80) currentChance = 80;
+                multiplier = (targetPrice / sourcePrice).toFixed(2);
+            }
+
+            document.getElementById('upgrade-multiplier-text').innerText = multiplier + 'x';
+            document.getElementById('upgrade-chance-text').innerText = currentChance.toFixed(1) + '%';
+            centerText.innerText = currentChance.toFixed(1) + '%';
+
+            const successOffset = circumference - (circumference * (currentChance / 100));
+            ring.style.strokeDasharray = circumference;
+            ring.style.strokeDashoffset = successOffset;
+
+            const arrowEl = document.getElementById('upgrade-pointer-arrow');
+            arrowEl.style.transition = 'none';
+            arrowEl.style.transform = 'translateX(-50%) rotate(0deg)';
+
+            actionBtn.disabled = !(upgraderSourceIndex !== null && upgraderTargetItem);
+        }
+
+        function startUpgrade() {
+            if(upgraderSourceIndex === null || !inventory[upgraderSourceIndex] || !upgraderTargetItem) return;
+
+            const sourceItem = inventory[upgraderSourceIndex];
+            const targetPrize = upgraderTargetItem;
+            let sourcePrice = sourceItem.price;
+            let targetPrice = targetPrize.price;
+            
+            let currentChance = sourcePrice >= targetPrice ? 80 : (sourcePrice / targetPrice) * 100;
+            if(currentChance > 80) currentChance = 80;
+
+            document.getElementById('upgrade-action-btn').disabled = true;
+            inventory.splice(upgraderSourceIndex, 1);
+            upgraderSourceIndex = null;
+            saveUserData();
+
+            const roll = Math.random() * 100;
+            const isSuccess = roll <= currentChance;
+
+            const baseRotations = 360 * 7; 
+            let stopAngle = 0;
+            
+            if(isSuccess) {
+                stopAngle = (Math.random() * (currentChance * 0.95) / 100) * 360;
+            } else {
+                let randomGrayRoll = currentChance + (Math.random() * (100 - currentChance));
+                stopAngle = (randomGrayRoll / 100) * 360;
+            }
+
+            const totalRotation = baseRotations + stopAngle;
+            const arrowEl = document.getElementById('upgrade-pointer-arrow');
+            
+            arrowEl.style.transition = 'transform 4s cubic-bezier(0.15, 0.85, 0.35, 1)';
+            arrowEl.style.transform = `translateX(-50%) rotate(${totalRotation}deg)`;
+
+            setTimeout(() => {
+                const modalText = document.getElementById('upgrade-modal-result-text');
+                if(isSuccess) {
+                    const wonNewItem = {
+                        name: targetPrize.name,
+                        price: targetPrize.price,
+                        icon: targetPrize.icon,
+                        id: Date.now() + Math.random(),
+                        locked: false
+                    };
+                    inventory.push(wonNewItem);
+                    modalText.innerHTML = `<span style="color: var(--accent);">АПГРЕЙД УСПЕШЕН! Вы выиграли:</span><br><br><div style="font-size: 2.5rem; margin: 10px 0;">${targetPrize.icon}</div><div style="color: var(--warning);">${targetPrize.name} (${targetPrize.price} 🪙)</div>`;
+                } else {
+                    modalText.innerHTML = `<span style="color: var(--danger);">АПГРЕЙД НЕ УДАЛСЯ! Ставка сгорела.</span>`;
+                }
+                saveUserData();
+                updateUpgraderSlotsUI();
+                document.getElementById('upgrade-result-modal').style.display = 'flex';
+            }, 4100);
+        }
+
+        function closeUpgradeResultModal() {
+            document.getElementById('upgrade-result-modal').style.display = 'none';
+            initUpgraderTab();
+        }
+
+        function activatePromo() {
+            const input = document.getElementById('promo-input').value.trim().toUpperCase();
+            const msg = document.getElementById('promo-msg');
+
+            if (!input) {
+                msg.className = "msg error";
+                msg.innerText = "Введите промокод!";
+                return;
+            }
+
+            if (!promoCodes[input]) {
+                msg.className = "msg error";
+                msg.innerText = "Такого промокода не существует!";
+                return;
+            }
+
+            if (usedPromos.includes(input)) {
+                msg.className = "msg error";
+                msg.innerText = "Вы уже активировали этот промокод!";
+                return;
+            }
+
+            const promoObj = promoCodes[input];
+            if (promoObj.uses >= promoObj.maxUses) {
+                msg.className = "msg error";
+                msg.innerText = "Лимит активаций этого промокода исчерпан!";
+                return;
+            }
+
+            promoObj.uses += 1;
+            usedPromos.push(input);
+            savePromosToStorage();
+            saveUserData();
+
+            updateBalanceFirebase(promoObj.reward, (success) => {
+                if (success) {
+                    msg.className = "msg success";
+                    msg.innerText = `Промокод успешно активирован! Получено: ${promoObj.reward} Braincoins 🪙`;
+                    document.getElementById('promo-input').value = '';
+                    setTimeout(() => { msg.innerText = ""; }, 4000);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
