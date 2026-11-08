@@ -133,7 +133,6 @@
             gap: 15px;
         }
 
-        /* Лучший дроп дня в шапке */
         .best-drop-banner {
             background: rgba(255, 177, 66, 0.08);
             border: 1px solid var(--warning);
@@ -1304,7 +1303,6 @@
     <header>
         <div class="logo">🎃 AkiraBrain.pet <span style="font-size: 0.8rem; color: var(--warning);">[Halloween Edition]</span></div>
         <div class="header-right">
-            <!-- Блок Лучший дроп дня -->
             <div class="best-drop-banner" id="best-drop-banner">
                 🏆 Лучший дроп дня: <img id="best-drop-img" src="https://files.catbox.moe/z65u7c.webp" style="width:24px;height:24px;border-radius:4px;object-fit:cover;vertical-align:middle;"> <b id="best-drop-name" style="color:var(--warning);">La Casa Boo</b> (<span id="best-drop-user">AkiraPro</span>)
             </div>
@@ -1325,7 +1323,7 @@
     <div id="auth-modal" class="modal">
         <div class="qty-box" style="max-width: 440px; text-align: left;">
             <h2 style="margin-bottom: 5px; color: var(--accent); text-align: center;">💀 Выберите или создайте аккаунт</h2>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px; text-align: center;">У каждого аккаунта свой баланс, инвентарь и лимиты промокодов.</p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 15px; text-align: center;">Лимит аккаунтов: 1 для игроков, до 5 для Akira.</p>
             
             <div id="saved-accounts-list" style="max-height: 160px; overflow-y: auto; margin-bottom: 15px; padding-right: 4px;"></div>
 
@@ -1748,7 +1746,6 @@
     </div>
 
     <script>
-        // 👉 ВАШИ ДАННЫЕ JSONBIN.IO:
         const JSONBIN_BIN_ID = "6ae3a15fffd5d1605396b07d";
         const JSONBIN_MASTER_KEY = "$2a$10$RFY8zYC66vs/lJToAiwCh.3S9FDSHTzYQ14KhagLuOCabXlf9CZNu";
 
@@ -1891,7 +1888,6 @@
                 { name: "Talpa di Fiero", price: 5, icon: "https://files.catbox.moe/ncv222.webp" },
                 { name: "La Vaca", price: 10, icon: "https://files.catbox.moe/fx6b8n.webp" }
             ],
-            // Слегка повышены шансы на редкие предметы в Gears
             gears: [
                 { name: "Radioactive Slap", price: 4, icon: "https://files.catbox.moe/z2559s.webp" },
                 { name: "Cursed Slap", price: 7, icon: "https://files.catbox.moe/8owds3.webp" },
@@ -1971,7 +1967,6 @@
                 { name: "Los bros", price: 75, icon: "https://files.catbox.moe/yjrv03.webp", customWeight: 6.0 },
                 { name: "Los Primos", price: 120, icon: "https://files.catbox.moe/yregqm.webp", ultraRare: true, customWeight: 2.0 }
             ],
-            // Слегка повышены шансы на топовые предметы в Halloween кейсе
             halloween: [
                 { name: "Mtetira bicicleteira", price: 55, icon: "https://files.catbox.moe/hrtd80.webp", customWeight: 11.0 },
                 { name: "Ketchuru and Musturu", price: 90, icon: "https://files.catbox.moe/fzbrxb.webp", customWeight: 9.0 },
@@ -2316,7 +2311,30 @@
                 return;
             }
 
-            if (input.toLowerCase() === 'akira') {
+            // Проверка лимита аккаунтов
+            let savedAccounts = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith('akirabrain_data_')) {
+                    savedAccounts.push(k.replace('akirabrain_data_', ''));
+                }
+            }
+
+            const isAkira = input.toLowerCase() === 'akira';
+            const maxAllowedAccounts = isAkira ? 5 : 1;
+
+            // Если аккаунт с таким именем уже существует, просто разрешаем вход/переключение
+            const accountExists = savedAccounts.some(acc => acc.toLowerCase() === input.toLowerCase());
+
+            if (!accountExists && savedAccounts.length >= maxAllowedAccounts) {
+                msg.className = "msg error";
+                msg.innerText = isAkira 
+                    ? "Достигнут лимит (максимум 5 аккаунтов для Akira)!" 
+                    : "Достигнут лимит (разрешен только 1 аккаунт)!";
+                return;
+            }
+
+            if (isAkira) {
                 const password = prompt("Введите пароль администратора для аккаунта Akira:");
                 if (password !== "12459567") {
                     msg.className = "msg error";
@@ -2503,7 +2521,6 @@
                 return;
             }
 
-            // Защита от ввода своего ника в реферальный код
             if (refCode && currentUser && refCode.toLowerCase() === currentUser.toLowerCase()) {
                 msg.className = "msg error";
                 msg.innerText = "Нельзя указывать свой собственный ник в реферальном коде!";
@@ -3341,7 +3358,7 @@
             ctx.clearRect(0, 0, w, h);
             ctx.beginPath();
             ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = '#ff3838'; // Красный (неудача)
+            ctx.fillStyle = '#ff3838';
             ctx.fill();
 
             const winAngleSpan = (winChance / 100) * (2 * Math.PI);
@@ -3351,7 +3368,7 @@
             const endAngle = startAngle + winAngleSpan;
             ctx.arc(cx, cy, radius, startAngle, endAngle, false);
             ctx.lineTo(cx, cy);
-            ctx.fillStyle = '#2ed573'; // Зеленый (успех)
+            ctx.fillStyle = '#2ed573';
             ctx.fill();
 
             ctx.lineWidth = 3;
@@ -3420,7 +3437,6 @@
             let winChance = sourceItem.price >= targetPrize.price ? 80 : (sourceItem.price / targetPrize.price) * 100;
             if(winChance > 80) winChance = 80;
 
-            // Повышаем шансы в апгрейдере (+5% бонус к вероятности для каждого броска)
             winChance = Math.min(80, winChance * 1.15);
 
             document.getElementById('upgrade-action-btn').disabled = true;
