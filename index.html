@@ -1749,9 +1749,28 @@
         const JSONBIN_BIN_ID = "6ae3a15fffd5d1605396b07d";
         const JSONBIN_MASTER_KEY = "$2a$10$RFY8zYC66vs/lJToAiwCh.3S9FDSHTzYQ14KhagLuOCabXlf9CZNu";
 
-        const CURRENT_RESET_VERSION = "v4_halloween_reset";
+        const CURRENT_RESET_VERSION = "v5_single_account_enforced";
         if (localStorage.getItem('akirabrain_reset_ver') !== CURRENT_RESET_VERSION) {
-            localStorage.clear();
+            // Очищаем старые аккаунты, оставляя только самый первый созданный (или аккаунт Akira до 5)
+            let accounts = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith('akirabrain_data_')) {
+                    accounts.push(k);
+                }
+            }
+            if (accounts.length > 0) {
+                // Сортируем по имени или оставляем первый попавшийся (самый первый созданный)
+                accounts.sort();
+                const keepAcc = accounts[0];
+                const keepData = localStorage.getItem(keepAcc);
+
+                localStorage.clear();
+                localStorage.setItem(keepAcc, keepData);
+                localStorage.setItem('akirabrain_current_user', keepAcc.replace('akirabrain_data_', ''));
+            } else {
+                localStorage.clear();
+            }
             localStorage.setItem('akirabrain_reset_ver', CURRENT_RESET_VERSION);
         }
 
@@ -2311,7 +2330,6 @@
                 return;
             }
 
-            // Проверка лимита аккаунтов
             let savedAccounts = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const k = localStorage.key(i);
@@ -2323,7 +2341,6 @@
             const isAkira = input.toLowerCase() === 'akira';
             const maxAllowedAccounts = isAkira ? 5 : 1;
 
-            // Если аккаунт с таким именем уже существует, просто разрешаем вход/переключение
             const accountExists = savedAccounts.some(acc => acc.toLowerCase() === input.toLowerCase());
 
             if (!accountExists && savedAccounts.length >= maxAllowedAccounts) {
