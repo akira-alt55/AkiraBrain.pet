@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -1095,17 +1094,41 @@
             animation: ghost-summon 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        @keyframes web-pulse {
-            0% { box-shadow: inset 0 0 15px rgba(255,255,255,0.2), 0 0 15px rgba(255,118,0,0.5); }
-            50% { box-shadow: inset 0 0 35px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.8); }
-            100% { box-shadow: inset 0 0 15px rgba(255,255,255,0.2), 0 0 15px rgba(255,118,0,0.5); }
+        @keyframes snow-pulse {
+            0% { box-shadow: inset 0 0 18px rgba(101, 207, 255, 0.6), 0 0 18px rgba(101, 207, 255, 0.8); }
+            50% { box-shadow: inset 0 0 38px rgba(255, 255, 255, 0.95), 0 0 35px rgba(101, 207, 255, 1); }
+            100% { box-shadow: inset 0 0 18px rgba(101, 207, 255, 0.6), 0 0 18px rgba(101, 207, 255, 0.8); }
         }
 
-        .dice-web-effect {
-            background-image: url('https://files.catbox.moe/v7w0st.jpg') !important;
-            background-size: cover !important;
+        .dice-snow-effect {
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #bae6fd 45%, #38bdf8 85%, #0284c7 100%) !important;
             border-color: #ffffff !important;
-            animation: web-pulse 1s infinite;
+            animation: snow-pulse 1s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        .dice-snow-effect::before {
+            content: '❄️';
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            font-size: 16px;
+            opacity: 0.95;
+            filter: drop-shadow(0 0 4px #fff);
+        }
+        .dice-snow-effect::after {
+            content: '❄';
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            font-size: 15px;
+            color: #fff;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 4px #fff);
+        }
+        .dice-snow-effect .die-dot {
+            background-color: #0284c7;
+            box-shadow: 0 0 10px #ffffff, inset 0 0 4px #ffffff;
         }
 
         #dice-cinematic-overlay {
@@ -1308,123 +1331,9 @@
         .qty-controls button:hover { border-color: var(--accent); }
         .catalog-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px;max-height:330px;overflow:auto;padding:4px; }
         @media(max-width:600px){.upgrader-panel{padding:16px}.upgrade-wheel-wrapper{width:min(330px,85vw);height:min(330px,85vw)}.upgrade-wheel-center{width:43%;height:43%}.upgrader-slots-row{gap:8px}.upgrader-slot{height:145px}}
-
-        /* AkiraBrain: device choice + responsive controls */
-        .device-choice-overlay {
-            position: fixed; inset: 0; z-index: 30000; display: flex;
-            align-items: center; justify-content: center; padding: 18px;
-            background: rgba(3,6,12,.96); backdrop-filter: blur(12px);
-        }
-        .device-choice-card {
-            width: min(560px, 100%); padding: 28px; text-align: center;
-            border: 1px solid var(--accent); border-radius: 22px;
-            background: linear-gradient(145deg,#171923,#090a10);
-            box-shadow: 0 0 45px var(--accent-glow);
-        }
-        .device-choice-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:22px; }
-        .device-choice-btn {
-            min-height:145px; border:1px solid var(--panel-border); border-radius:16px;
-            color:#fff; background:rgba(255,255,255,.04); cursor:pointer;
-            display:flex; flex-direction:column; justify-content:center; align-items:center; gap:9px;
-            font-size:1.05rem; font-weight:800; transition:.2s;
-        }
-        .device-choice-btn:hover { border-color:var(--accent); background:rgba(255,51,79,.12); transform:translateY(-3px); }
-        .device-choice-btn .device-icon { font-size:2.8rem; }
-        .device-choice-note { color:var(--text-secondary); font-size:.82rem; margin-top:16px; line-height:1.5; }
-        .telegram-gate {
-            display:none; position:fixed; inset:0; z-index:25000; align-items:center;
-            justify-content:center; padding:18px; background:rgba(3,6,12,.94); backdrop-filter:blur(10px);
-        }
-        .telegram-gate-card {
-            width:min(440px,100%); padding:26px; text-align:center; border-radius:20px;
-            border:1px solid var(--accent); background:var(--panel-bg); box-shadow:0 0 35px var(--accent-glow);
-        }
-        .telegram-gate-card p { color:var(--text-secondary); line-height:1.5; margin:12px 0 18px; }
-        .telegram-gate-actions { display:grid; gap:10px; }
-        .telegram-gate-actions a { display:block; text-decoration:none; text-align:center; }
-        body.device-mobile main { padding:12px; }
-        body.device-mobile header { padding:10px 12px; }
-        body.device-mobile .logo { font-size:1.12rem; }
-        body.device-mobile .header-right { width:100%; justify-content:space-between; gap:7px; }
-        body.device-mobile .best-drop-banner { order:3; width:100%; justify-content:center; font-size:.72rem; padding:5px 8px; }
-        body.device-mobile .balance-container { font-size:.88rem; padding:6px 9px; }
-        body.device-mobile .user-profile-badge { font-size:.8rem; padding:6px 8px; }
-        body.device-mobile nav { position:sticky; top:0; z-index:120; padding:0 4px; }
-        body.device-mobile .tab-btn { padding:12px 13px; font-size:.86rem; }
-        body.device-mobile .cases-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-        body.device-mobile .case-card { padding:10px; border-radius:12px; }
-        body.device-mobile .case-img { height:115px; }
-        body.device-mobile .case-title { font-size:.94rem; }
-        body.device-mobile .case-price { font-size:.82rem; margin-bottom:10px; }
-        body.device-mobile .btn { min-height:44px; padding:11px 8px; font-size:.9rem; }
-        body.device-mobile .case-categories { gap:7px; margin-bottom:14px; }
-        body.device-mobile .cat-btn { padding:9px 12px; font-size:.82rem; }
-        body.device-mobile .inventory-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-        body.device-mobile .inv-card { padding:11px 8px; }
-        body.device-mobile .modal { padding:8px; }
-        body.device-mobile .case-fullscreen-window,
-        body.device-mobile .roulette-window { padding:14px; border-radius:14px; max-height:94vh; }
-        body.device-mobile .roulette-track-container { height:145px; }
-        body.device-mobile .roulette-item { width:125px; min-width:125px; }
-        body.device-mobile .roulette-item-img { width:62px; height:62px; }
-        body.device-mobile .qty-box { padding:18px; }
-        body.device-mobile .profile-card { padding:15px; }
-        body.device-mobile .dice-game-container { padding:15px; }
-        body.device-mobile .cinematic-dice-row { gap:8px; }
-        body.device-mobile .cinematic-die { width: min(19vw,90px); height:min(19vw,90px); }
-        body.device-mobile .requests-table { display:block; overflow-x:auto; }
-        body.device-mobile .device-choice-card { padding:20px 15px; }
-        @media (max-width:520px) {
-            .device-choice-grid { gap:9px; }
-            .device-choice-btn { min-height:120px; font-size:.92rem; }
-            .device-choice-btn .device-icon { font-size:2.2rem; }
-            body.device-mobile .cases-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-            body.device-mobile .case-item-preview-card { min-width:0; }
-            body.device-mobile .case-items-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-            body.device-mobile .qty-select-row { gap:6px; }
-            body.device-mobile .qty-num-btn { width:40px; height:42px; }
-            body.device-mobile .modal-actions { flex-direction:column; }
-            body.device-mobile .modal-actions .btn { width:100% !important; }
-        }
-        body.device-pc .cases-grid { grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
-
     </style>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-
-    <div id="device-choice-overlay" class="device-choice-overlay">
-        <div class="device-choice-card">
-            <div style="font-size:2.2rem;margin-bottom:8px;">🧠</div>
-            <h2 style="color:var(--accent);">Как ты играешь?</h2>
-            <p style="color:var(--text-secondary);margin-top:8px;">Выбери устройство — мы настроим интерфейс AkiraBrain.pet.</p>
-            <div class="device-choice-grid">
-                <button class="device-choice-btn" onclick="selectDeviceMode('pc')">
-                    <span class="device-icon">🖥️</span><span>Играю с ПК</span>
-                    <small style="color:var(--text-secondary);font-weight:400;">Полный интерфейс</small>
-                </button>
-                <button class="device-choice-btn" onclick="selectDeviceMode('mobile')">
-                    <span class="device-icon">📱</span><span>Играю с телефона</span>
-                    <small style="color:var(--text-secondary);font-weight:400;">Удобные кнопки и меню</small>
-                </button>
-            </div>
-            <div class="device-choice-note">Выбор сохранится. Изменить его можно будет в настройках профиля.</div>
-        </div>
-    </div>
-
-    <div id="telegram-subscription-gate" class="telegram-gate">
-        <div class="telegram-gate-card">
-            <div style="font-size:2.5rem;">📢</div>
-            <h2 style="color:var(--accent);">Подпишись на Akira Team</h2>
-            <p id="telegram-gate-message">Бесплатный кейс доступен только подписчикам нашего Telegram-канала.</p>
-            <div class="telegram-gate-actions">
-                <a class="btn" href="https://t.me/akirateam211" target="_blank" rel="noopener">Открыть Telegram-канал</a>
-                <button class="btn" type="button" onclick="verifyTelegramSubscription(true)">Я подписался — проверить</button>
-                <button class="turbo-btn" type="button" style="justify-content:center;" onclick="closeTelegramGate()">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
     <div id="toast-container" class="toast-container"></div>
     <div id="theme-snow" class="theme-snow" aria-hidden="true"></div>
 
@@ -1753,14 +1662,14 @@
         <div id="coloredice" class="tab-content">
             <div class="dice-game-container">
                 <h2 style="margin-bottom: 5px; color: var(--accent);">🎲 Color dice</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Поставьте брейнрот, выберите цвет и испытайте удачу! Сквозь паутину может пробраться <b>х10 множитель</b>!</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px;">Поставьте брейнрот, выберите цвет и испытайте удачу! Сквозь метель может пробраться <b>х10 множитель</b>!</p>
                 
                 <div class="dice-rules-box" style="font-size: 0.85rem; color: var(--text-secondary); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--panel-border); padding: 12px; border-radius: 10px; margin-bottom: 20px; text-align: left; line-height: 1.5;">
                     <b>Правила игры:</b><br>
                     • Выберите цвет и поставьте предмет из инвентаря.<br>
                     • 1 совпадение — выигрыш <b>x2</b> (получаете 2 таких же брейнрота)!<br>
                     • 4 одинаковых кубика — супер-выигрыш <b>x3</b> (3 таких же брейнрота)!<br>
-                    • 🕸️ <b>Секрет:</b> Кубики могут покрыться паутиной и выдать грандиозный <b>x10</b> к вашему предмету!
+                    • ❄️ <b>Секрет:</b> Кубики могут покрыться льдом и снегом и выдать грандиозный <b>x10</b> к вашему предмету!
                 </div>
 
                 <div class="dice-controls">
@@ -1943,6 +1852,9 @@
     </div>
 
     <script>
+        const JSONBIN_BIN_ID = "6af464cbac6210605a7f9b2f";
+        const JSONBIN_MASTER_KEY = "$2a$10$RFY8zYC66vs/lJToAiwCh.3S9FDSHTzYQ14KhagLuOCabXlf9CZNu";
+
         const CURRENT_RESET_VERSION = "v5_single_account_enforced";
         if (localStorage.getItem('akirabrain_reset_ver') !== CURRENT_RESET_VERSION) {
             let accounts = [];
@@ -2263,7 +2175,6 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            showDeviceChoiceIfNeeded();
             loadLocalCloudMirror();
             loadCustomContent();
             buildRandomCasePool();
@@ -2289,9 +2200,17 @@
             remoteCloudData = record;
             if (remoteCloudData.fuseSettings) applyFuseSettings();
             if (remoteCloudData.siteContent) {
-                if (remoteCloudData.siteContent.cases) defaultCasesData = remoteCloudData.siteContent.cases;
-                if (remoteCloudData.siteContent.items) itemsData = remoteCloudData.siteContent.items;
-                if (remoteCloudData.siteContent.theme) applySiteTheme(remoteCloudData.siteContent.theme, false);
+                if (remoteCloudData.siteContent.cases && Object.keys(remoteCloudData.siteContent.cases).length > 0) {
+                    defaultCasesData = remoteCloudData.siteContent.cases;
+                    localStorage.setItem('akirabrain_custom_cases', JSON.stringify(defaultCasesData));
+                }
+                if (remoteCloudData.siteContent.items && Object.keys(remoteCloudData.siteContent.items).length > 0) {
+                    itemsData = remoteCloudData.siteContent.items;
+                    localStorage.setItem('akirabrain_custom_items', JSON.stringify(itemsData));
+                }
+                if (remoteCloudData.siteContent.theme) {
+                    applySiteTheme(remoteCloudData.siteContent.theme, false);
+                }
                 buildRandomCasePool();
                 renderCasesGrid();
             }
@@ -2299,7 +2218,10 @@
                 globalRequests = remoteCloudData.requests;
             }
             if (remoteCloudData.promoCodes) {
-                Object.assign(promoCodes, remoteCloudData.promoCodes);
+                promoCodes = { ...promoCodes, ...remoteCloudData.promoCodes };
+                if (remoteCloudData.deletedPromos) {
+                    remoteCloudData.deletedPromos.forEach(c => delete promoCodes[c]);
+                }
             }
             if (Array.isArray(remoteCloudData.liveDrops)) {
                 liveDropsList = remoteCloudData.liveDrops;
@@ -2330,7 +2252,10 @@
         }
 
         function syncCloudData(callback) {
-            fetch('/api/cloud')
+            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': JSONBIN_MASTER_KEY },
+                cache: 'no-store'
+            })
             .then(res => {
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 return res.json();
@@ -2343,7 +2268,6 @@
                 if (callback) callback();
             })
             .catch(() => {
-                // Если бэкенд /api/cloud недоступен, берем актуальные локальные зеркала
                 loadLocalCloudMirror();
                 applyRemoteCloudRecord(remoteCloudData);
                 if (callback) callback();
@@ -2372,9 +2296,12 @@
 
             saveLocalCloudMirror();
 
-            fetch('/api/cloud', {
+            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_MASTER_KEY
+                },
                 body: JSON.stringify(remoteCloudData)
             }).catch(() => {});
         }
@@ -2395,15 +2322,23 @@
 
         function loadCustomContent() {
             const customCases = localStorage.getItem('akirabrain_custom_cases');
-            if (customCases) Object.assign(defaultCasesData, JSON.parse(customCases));
+            if (customCases) {
+                try {
+                    const parsedCases = JSON.parse(customCases);
+                    if (parsedCases && Object.keys(parsedCases).length > 0) {
+                        defaultCasesData = parsedCases;
+                    }
+                } catch(e) {}
+            }
 
             const customItems = localStorage.getItem('akirabrain_custom_items');
             if (customItems) {
-                const parsed = JSON.parse(customItems);
-                for (let key in parsed) {
-                    if (!itemsData[key]) itemsData[key] = [];
-                    parsed[key].forEach(it => { if (!itemsData[key].some(x => x.name === it.name)) itemsData[key].push(it); });
-                }
+                try {
+                    const parsedItems = JSON.parse(customItems);
+                    if (parsedItems && Object.keys(parsedItems).length > 0) {
+                        itemsData = parsedItems;
+                    }
+                } catch(e) {}
             }
             const savedTheme = localStorage.getItem('akirabrain_theme') || 'red';
             applySiteTheme(savedTheme, false);
@@ -2499,88 +2434,7 @@
             }
         }
 
-
-        // --- Выбор устройства ---
-        function selectDeviceMode(mode) {
-            const safeMode = mode === 'mobile' ? 'mobile' : 'pc';
-            localStorage.setItem('akirabrain_device_mode', safeMode);
-            applyDeviceMode(safeMode);
-            const overlay = document.getElementById('device-choice-overlay');
-            if (overlay) overlay.style.display = 'none';
-        }
-
-        function applyDeviceMode(mode) {
-            document.body.classList.toggle('device-mobile', mode === 'mobile');
-            document.body.classList.toggle('device-pc', mode !== 'mobile');
-        }
-
-        function showDeviceChoiceIfNeeded() {
-            const savedMode = localStorage.getItem('akirabrain_device_mode');
-            if (savedMode === 'pc' || savedMode === 'mobile') {
-                applyDeviceMode(savedMode);
-                document.getElementById('device-choice-overlay').style.display = 'none';
-            } else {
-                document.getElementById('device-choice-overlay').style.display = 'flex';
-            }
-        }
-
-        // --- Проверка подписки через Vercel API ---
-        // Важно: проверка настоящая только при работе через Telegram Mini App
-        // и при установленном серверном обработчике /api/check-subscription.js.
-        const AKIRA_TELEGRAM_CHANNEL = 'akirateam211';
-        let telegramGatePending = false;
-
-        function closeTelegramGate() {
-            document.getElementById('telegram-subscription-gate').style.display = 'none';
-            telegramGatePending = false;
-        }
-
-        function showTelegramGate(message) {
-            const box = document.getElementById('telegram-subscription-gate');
-            document.getElementById('telegram-gate-message').innerText = message ||
-                'Бесплатный кейс доступен только подписчикам нашего Telegram-канала.';
-            box.style.display = 'flex';
-        }
-
-        async function verifyTelegramSubscription(showGateOnFailure = false) {
-            const tg = window.Telegram && window.Telegram.WebApp;
-            const initData = tg && tg.initData;
-            if (!initData) {
-                if (showGateOnFailure) {
-                    showTelegramGate('Чтобы проверить подписку, открой игру через Telegram Mini App. В обычном браузере Telegram не передаёт подтверждённый ID игрока.');
-                }
-                return false;
-            }
-
-            try {
-                const response = await fetch('/api/check-subscription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ initData })
-                });
-                if (!response.ok) throw new Error('Не удалось связаться с сервером проверки.');
-                const result = await response.json();
-
-                if (result && result.ok && result.subscribed === true) {
-                    closeTelegramGate();
-                    return true;
-                }
-
-                if (showGateOnFailure) {
-                    showTelegramGate(result && result.message
-                        ? result.message
-                        : 'Подписка не найдена. Подпишись на канал и нажми «Я подписался — проверить».');
-                }
-                return false;
-            } catch (error) {
-                if (showGateOnFailure) {
-                    showTelegramGate('Проверка сейчас недоступна. Убедись, что серверный файл /api/check-subscription.js установлен на Vercel, и попробуй ещё раз.');
-                }
-                return false;
-            }
-        }
-
-        async function confirmAndOpenCase() {
+        function confirmAndOpenCase() {
             playSound('click');
             closeFullscreenCaseModal();
             const caseKey = currentSelectedCase;
@@ -2588,12 +2442,6 @@
             const price = defaultCasesData[caseKey].price * qty;
 
             if (caseKey === 'free') {
-                if (telegramGatePending) return;
-                telegramGatePending = true;
-                const isSubscriber = await verifyTelegramSubscription(true);
-                telegramGatePending = false;
-                if (!isSubscriber) return;
-
                 if (Date.now() < freeCaseCooldownEnd) {
                     showToast('Бесплатный кейс еще на перезарядке!', 'error');
                     return;
@@ -3484,7 +3332,7 @@
             for (let i = 0; i < 4; i++) {
                 const dieEl = document.getElementById(`c-die-${i}`);
                 dieEl.classList.remove('show');
-                dieEl.classList.remove('dice-web-effect');
+                dieEl.classList.remove('dice-snow-effect');
                 dieEl.style.backgroundColor = '#2a1f18';
             }
 
@@ -3494,7 +3342,7 @@
                     playSound('tick');
                     const dieEl = document.getElementById(`c-die-${step}`);
                     dieEl.classList.add('show');
-                    if (isSecretX10) dieEl.classList.add('dice-web-effect');
+                    if (isSecretX10) dieEl.classList.add('dice-snow-effect');
                     else dieEl.style.backgroundColor = rolledColors[step].hex;
                     statusText.innerText = `Вылетел кубик ${step + 1} из 4...`;
                     step++;
@@ -3515,8 +3363,8 @@
 
             for (let i = 0; i < 4; i++) {
                 const dieEl = document.getElementById(`die-${i}`);
-                dieEl.classList.remove('dice-web-effect');
-                if (isSecretX10) dieEl.classList.add('dice-web-effect');
+                dieEl.classList.remove('dice-snow-effect');
+                if (isSecretX10) dieEl.classList.add('dice-snow-effect');
                 else dieEl.style.backgroundColor = rolledColors[i].hex;
             }
 
@@ -3530,7 +3378,7 @@
                 saveUserData();
                 renderInventory();
                 msg.className = "msg success";
-                msg.innerText = `🕸️✨ ДЖЕКПОТ x10! Вы получили 10 предметов "${rewardItemTemplate.name}"!`;
+                msg.innerText = `❄️✨ СНЕЖНЫЙ ДЖЕКПОТ x10! Вы получили 10 предметов "${rewardItemTemplate.name}"!`;
             } else {
                 let matchCount = rolledColors.filter(c => c.name === diceSelectedColor).length;
                 if (matchCount === 4) {
@@ -3804,7 +3652,7 @@
         function adminDeleteCatalogItem(encoded){const name=decodeURIComponent(encoded);showConfirmModal('Удалить '+name+' из всех кейсов и общего каталога?', () => {Object.keys(itemsData).forEach(k=>itemsData[k]=itemsData[k].filter(it=>it.name!==name));saveSiteContent();renderAdminGlobalItems();renderAdminCaseManager();renderAdminCaseItemChoices();});}
         function adminAddNewPromo(){const code=document.getElementById('admin-promo-code').value.trim().toUpperCase();const reward=Number(document.getElementById('admin-promo-reward').value);const limit=Number(document.getElementById('admin-promo-limit').value);const msg=document.getElementById('admin-promo-msg');if(!code||!Number.isFinite(reward)||reward<=0||!Number.isInteger(limit)||limit<1){msg.className='msg error';msg.innerText='Заполни код, награду и лимит корректно.';return;}promoCodes[code]={reward,maxUses:limit,uses:0};saveCloudData();renderAdminPromoList();msg.className='msg success';msg.innerText='Промокод создан и сохранён.';}
         function renderAdminPromoList(){const el=document.getElementById('admin-promo-list');if(!el)return;el.innerHTML=Object.entries(promoCodes).map(([code,p])=>`<div class="admin-row"><div class="admin-row-main"><b>${code}</b><small>${p.reward} 🪙 · использовано ${p.uses||0}/${p.maxUses||'∞'}</small></div><button onclick="adminDeletePromo('${code}')">Удалить</button></div>`).join('');}
-        function adminDeletePromo(code){showConfirmModal('Удалить промокод '+code+'?', () => {delete promoCodes[code];saveCloudData();renderAdminPromoList();});}
+        function adminDeletePromo(code){showConfirmModal('Удалить промокод '+code+'?', () => {delete promoCodes[code];if(!remoteCloudData.deletedPromos)remoteCloudData.deletedPromos=[];if(!remoteCloudData.deletedPromos.includes(code))remoteCloudData.deletedPromos.push(code);saveCloudData();renderAdminPromoList();});}
 
         let upgraderCurrentPointerAngle = 0;
 
