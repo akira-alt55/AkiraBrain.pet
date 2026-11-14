@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AkiraBrain.pet — Red Dark Edition</title>
+    <title>AkiraBrain.pet — Полная рабочая версия</title>
     <style>
         :root {
             --bg-color: #08090d;
@@ -12,7 +12,7 @@
             --accent: #ff334f;
             --accent-glow: rgba(255, 51, 79, 0.35);
             --text: #ffffff;
-            --text-secondary: #9a9eaa;
+            --text-secondary: #9a8d96;
             --danger: #ff3838;
             --warning: #ff7588;
             --warning-glow: rgba(255, 117, 136, 0.35);
@@ -1330,6 +1330,127 @@
         .qty-controls button { width:27px;height:27px;border:1px solid var(--panel-border);border-radius:8px;background:#181923;color:white;cursor:pointer; }
         .qty-controls button:hover { border-color: var(--accent); }
         .catalog-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px;max-height:330px;overflow:auto;padding:4px; }
+
+        /* Стили для режимов ПК и Телефон */
+        .device-choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 15px;
+        }
+        .device-choice-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .device-choice-card:hover {
+            border-color: var(--accent);
+            background: rgba(255, 51, 79, 0.12);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+        }
+        .device-choice-icon {
+            font-size: 2.6rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        body.device-mobile header {
+            padding: 10px 12px;
+            justify-content: center;
+            text-align: center;
+        }
+        body.device-mobile .logo {
+            font-size: 1.25rem;
+            width: 100%;
+        }
+        body.device-mobile .header-right {
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        body.device-mobile .best-drop-banner {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        body.device-mobile .balance-container {
+            font-size: 0.95rem;
+            padding: 6px 12px;
+        }
+        body.device-mobile nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 950;
+            border-top: 2px solid var(--panel-border);
+            border-bottom: none;
+            background: var(--panel-bg);
+            padding: 4px 6px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.85);
+        }
+        body.device-mobile .tab-btn {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+        }
+        body.device-mobile main {
+            padding: 12px 12px 78px 12px;
+        }
+        body.device-mobile .cases-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        body.device-mobile .case-card {
+            padding: 12px;
+            border-radius: 12px;
+        }
+        body.device-mobile .case-img {
+            height: 115px;
+        }
+        body.device-mobile .case-title {
+            font-size: 0.95rem;
+        }
+        body.device-mobile .case-price {
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        body.device-mobile .btn {
+            padding: 10px 8px;
+            font-size: 0.85rem;
+        }
+        body.device-mobile .inventory-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        body.device-mobile .upgrader-container,
+        body.device-mobile .profile-layout {
+            grid-template-columns: 1fr;
+        }
+        body.device-mobile .upgrade-wheel-wrapper {
+            width: 260px;
+            height: 260px;
+        }
+        body.device-mobile .upgrade-wheel-center {
+            width: 115px;
+            height: 115px;
+        }
+        body.device-mobile .color-die {
+            width: 58px;
+            height: 58px;
+        }
+        body.device-mobile .toast-container {
+            bottom: 70px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
+
         @media(max-width:600px){.upgrader-panel{padding:16px}.upgrade-wheel-wrapper{width:min(330px,85vw);height:min(330px,85vw)}.upgrade-wheel-center{width:43%;height:43%}.upgrader-slots-row{gap:8px}.upgrader-slot{height:145px}}
     </style>
 </head>
@@ -1408,6 +1529,9 @@
             <button class="turbo-btn" id="turbo-toggle-btn" onclick="toggleTurboMode()" title="Ускорение анимаций и звуков">
                 ⚡ <span id="turbo-status-text">Выкл</span>
             </button>
+            <button class="turbo-btn" id="device-switch-btn" onclick="openDeviceModal()" title="Сменить режим интерфейса (ПК / Телефон)">
+                <span id="device-indicator-icon">🖥️</span> <span id="device-indicator-text">ПК</span>
+            </button>
             <div class="user-profile-badge" id="profile-badge" style="display: none;">
                 👤 <span id="current-username"></span>
                 <button class="logout-btn" onclick="openAuthModal()">Сменить аккаунт</button>
@@ -1417,6 +1541,44 @@
             </div>
         </div>
     </header>
+
+    <!-- Модалка выбора устройства при входе -->
+    <div id="device-modal" class="modal" style="z-index: 1200;">
+        <div class="qty-box" style="max-width: 460px; text-align: center;">
+            <h2 style="margin-bottom: 8px; color: var(--accent);">🎮 С чего вы играете?</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Выберите устройство — интерфейс сайта автоматически подстроится под ваш экран.</p>
+            <div class="device-choice-grid">
+                <div class="device-choice-card" onclick="selectDeviceMode('pc')">
+                    <span class="device-choice-icon">🖥️</span>
+                    <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 4px;">ПК / Ноутбук</div>
+                    <div style="font-size: 0.78rem; color: var(--text-secondary);">Широкая сетка, верхнее меню и крупные окна</div>
+                </div>
+                <div class="device-choice-card" onclick="selectDeviceMode('mobile')">
+                    <span class="device-choice-icon">📱</span>
+                    <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 4px;">Телефон</div>
+                    <div style="font-size: 0.78rem; color: var(--text-secondary);">Нижняя навигация и удобные карточки под палец</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка подписки на ТГК для бесплатного кейса -->
+    <div id="tg-sub-modal" class="modal" style="z-index: 1150;">
+        <div class="qty-box" style="max-width: 440px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 8px;">✈️</div>
+            <h2 style="margin-bottom: 8px; color: var(--accent);">Подписка на Telegram</h2>
+            <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 18px; line-height: 1.45;">
+                Чтобы открывать <b>Бесплатный кейс</b>, нужно быть подписанным на наш официальный Telegram-канал!
+            </p>
+            <a href="https://t.me/akirateam211" target="_blank" rel="noopener noreferrer" onclick="markTgLinkOpened()" class="btn" style="display: block; text-decoration: none; background: linear-gradient(135deg, #229ED9, #1778a8); margin-bottom: 10px;">
+                📢 Перейти и подписаться (@akirateam211)
+            </a>
+            <button class="btn" id="tg-verify-btn" style="background: linear-gradient(135deg, #2ed573, #1e9e52); margin-bottom: 10px;" onclick="verifyTgSubscription()">
+                ✅ Я подписался, проверить!
+            </button>
+            <button class="btn" style="background: #2a1f18; color: #fff;" onclick="closeTgSubModal()">Закрыть</button>
+        </div>
+    </div>
 
     <!-- Модалка входа / регистрации -->
     <div id="auth-modal" class="modal">
@@ -1875,6 +2037,98 @@
             localStorage.setItem('akirabrain_reset_ver', CURRENT_RESET_VERSION);
         }
 
+        function getCurrentCleanUser() {
+            if (!currentUser) return '';
+            return currentUser.trim().toLowerCase().replace(/[.#$\[\]]/g, "_");
+        }
+
+        function applyRemoteCloudRecord(record) {
+            if (!record || typeof record !== 'object') return;
+            remoteCloudData = { ...remoteCloudData, ...record };
+            if (Array.isArray(record.requests)) globalRequests = record.requests;
+            if (record.promoCodes && typeof record.promoCodes === 'object') {
+                const deleted = Array.isArray(record.deletedPromos) ? record.deletedPromos : [];
+                Object.entries(record.promoCodes).forEach(([k, v]) => {
+                    if (!deleted.includes(k)) promoCodes[k] = v;
+                });
+            }
+            if (Array.isArray(record.liveDrops) && record.liveDrops.length > 0) {
+                liveDropsList = record.liveDrops;
+                renderLiveDrops();
+            }
+            if (record.bestDrop) {
+                updateBestDropBanner(record.bestDrop);
+            }
+            if (record.siteContent) {
+                if (record.siteContent.cases && Object.keys(record.siteContent.cases).length > 0) {
+                    defaultCasesData = record.siteContent.cases;
+                    localStorage.setItem('akirabrain_custom_cases', JSON.stringify(defaultCasesData));
+                }
+                if (record.siteContent.items && Object.keys(record.siteContent.items).length > 0) {
+                    itemsData = record.siteContent.items;
+                    localStorage.setItem('akirabrain_custom_items', JSON.stringify(itemsData));
+                }
+                if (record.siteContent.theme) {
+                    applySiteTheme(record.siteContent.theme, false);
+                }
+                buildRandomCasePool();
+                renderCasesGrid();
+            }
+            if (record.fuseSettings) {
+                applyFuseSettings();
+            }
+            if (currentUser) {
+                const cleanUser = getCurrentCleanUser();
+                if (record.users && record.users[cleanUser]) {
+                    const cloudU = record.users[cleanUser];
+                    if (cloudU.balance !== undefined) balance = Number(cloudU.balance) || 0;
+                    if (Array.isArray(cloudU.inventory)) inventory = cloudU.inventory;
+                    if (Array.isArray(cloudU.usedPromos)) usedPromos = cloudU.usedPromos;
+                    if (cloudU.freeCaseCooldownEnd !== undefined) freeCaseCooldownEnd = cloudU.freeCaseCooldownEnd;
+                    if (cloudU.refBalance !== undefined) refBalance = cloudU.refBalance;
+                    if (cloudU.refCount !== undefined) refCount = cloudU.refCount;
+                    if (Array.isArray(cloudU.diceHistory)) diceHistory = cloudU.diceHistory;
+                    const balEl = document.getElementById('balance');
+                    if (balEl) balEl.innerText = balance;
+                }
+            }
+        }
+
+        function updateBestDropBanner(drop) {
+            if (!drop || !drop.item) return;
+            const img = document.getElementById('best-drop-img');
+            const name = document.getElementById('best-drop-name');
+            const user = document.getElementById('best-drop-user');
+            if (img && drop.item.icon) {
+                img.src = drop.item.icon;
+                img.style.display = 'inline-block';
+            }
+            if (name) name.innerText = `${drop.item.name} (${drop.item.price} 🪙)`;
+            if (user) user.innerText = drop.user || 'Игрок';
+        }
+
+        function checkAndUpdateBestDrop(username, item) {
+            if (!item) return;
+            const currentBestPrice = (remoteCloudData.bestDrop && remoteCloudData.bestDrop.item) ? Number(remoteCloudData.bestDrop.item.price) : 0;
+            if (Number(item.price) >= currentBestPrice) {
+                remoteCloudData.bestDrop = { user: username, item: item, time: Date.now() };
+                updateBestDropBanner(remoteCloudData.bestDrop);
+            }
+        }
+
+        function getAllUniqueBrainrots() {
+            const map = new Map();
+            Object.values(itemsData).forEach(pool => {
+                if (!Array.isArray(pool)) return;
+                pool.forEach(it => {
+                    if (it && it.name && !map.has(it.name.toLowerCase())) {
+                        map.set(it.name.toLowerCase(), { name: it.name, price: Number(it.price) || 1, icon: it.icon });
+                    }
+                });
+            });
+            return Array.from(map.values()).sort((a, b) => a.price - b.price);
+        }
+
         // Уведомления вместо alert()
         function showToast(text, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -1934,6 +2188,10 @@
         let adminSelectedCaseItems = new Set();
         let activeSiteTheme = "red";
         let selectedFuseIndices = [];
+
+        let isTgSubscribed = localStorage.getItem('akirabrain_tg_sub_akirateam211') === 'true';
+        let tgLinkClicked = false;
+        let currentDeviceMode = localStorage.getItem('akirabrain_device_mode') || null;
 
         let diceSelectedBetIndex = null;
         let diceSelectedColor = null;
@@ -2174,6 +2432,29 @@
             } catch (e) {}
         }
 
+        function loadCustomContent() {
+            try {
+                const customCases = localStorage.getItem('akirabrain_custom_cases');
+                if (customCases) {
+                    const parsedCases = JSON.parse(customCases);
+                    if (parsedCases && typeof parsedCases === 'object') {
+                        defaultCasesData = { ...defaultCasesData, ...parsedCases };
+                    }
+                }
+                const customItems = localStorage.getItem('akirabrain_custom_items');
+                if (customItems) {
+                    const parsedItems = JSON.parse(customItems);
+                    if (parsedItems && typeof parsedItems === 'object') {
+                        Object.entries(parsedItems).forEach(([key, pool]) => {
+                            if (Array.isArray(pool)) {
+                                itemsData[key] = pool;
+                            }
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             loadLocalCloudMirror();
             loadCustomContent();
@@ -2182,283 +2463,242 @@
             renderDicePalette();
             initLiveDropsTicker();
             initDynamicOnlineCounter();
+
+            if (currentDeviceMode) {
+                applyDeviceMode(currentDeviceMode, false);
+            } else {
+                openDeviceModal();
+            }
             
             syncCloudData(() => {
                 const savedUser = localStorage.getItem('akirabrain_current_user');
                 if (savedUser) {
                     loadUserData(savedUser);
-                } else {
+                } else if (currentDeviceMode) {
                     openAuthModal();
                 }
             });
 
             setInterval(syncCloudData, 5000);
+            setInterval(updateFreeCaseTimerUI, 1000);
         });
 
-        function applyRemoteCloudRecord(record) {
-            if (!record) return;
-            remoteCloudData = record;
-            if (remoteCloudData.fuseSettings) applyFuseSettings();
-            if (remoteCloudData.siteContent) {
-                if (remoteCloudData.siteContent.cases && Object.keys(remoteCloudData.siteContent.cases).length > 0) {
-                    defaultCasesData = remoteCloudData.siteContent.cases;
-                    localStorage.setItem('akirabrain_custom_cases', JSON.stringify(defaultCasesData));
-                }
-                if (remoteCloudData.siteContent.items && Object.keys(remoteCloudData.siteContent.items).length > 0) {
-                    itemsData = remoteCloudData.siteContent.items;
-                    localStorage.setItem('akirabrain_custom_items', JSON.stringify(itemsData));
-                }
-                if (remoteCloudData.siteContent.theme) {
-                    applySiteTheme(remoteCloudData.siteContent.theme, false);
-                }
-                buildRandomCasePool();
-                renderCasesGrid();
-            }
-            if (Array.isArray(remoteCloudData.requests)) {
-                globalRequests = remoteCloudData.requests;
-            }
-            if (remoteCloudData.promoCodes) {
-                promoCodes = { ...promoCodes, ...remoteCloudData.promoCodes };
-                if (remoteCloudData.deletedPromos) {
-                    remoteCloudData.deletedPromos.forEach(c => delete promoCodes[c]);
-                }
-            }
-            if (Array.isArray(remoteCloudData.liveDrops)) {
-                liveDropsList = remoteCloudData.liveDrops;
-                renderLiveDrops();
-            }
-            updateBestDropBanner(remoteCloudData.bestDrop || null);
-
-            if (currentUser) {
-                const cleanUser = getCurrentCleanUser();
-                if (remoteCloudData.users && remoteCloudData.users[cleanUser]) {
-                    const cloudU = remoteCloudData.users[cleanUser];
-                    balance = cloudU.balance !== undefined ? cloudU.balance : balance;
-                    if (Array.isArray(cloudU.inventory)) {
-                        inventory = cloudU.inventory;
-                    }
-                    refBalance = cloudU.refBalance !== undefined ? cloudU.refBalance : refBalance;
-                    refCount = cloudU.refCount !== undefined ? cloudU.refCount : refCount;
-                    diceHistory = cloudU.diceHistory || diceHistory;
-                    document.getElementById('balance').innerText = balance;
-                }
-                const activeTab = document.querySelector('.tab-content.active');
-                if (activeTab) {
-                    if (activeTab.id === 'inventory') renderInventory();
-                    if (activeTab.id === 'profile') { renderWithdrawPicker(); renderUserRequestsHistory(); }
-                    if (activeTab.id === 'requests') renderRequestsTable();
-                }
-            }
-        }
-
-        function syncCloudData(callback) {
-            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': JSONBIN_MASTER_KEY },
-                cache: 'no-store'
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                return res.json();
-            })
-            .then(data => {
-                if (data && data.record) {
-                    applyRemoteCloudRecord(data.record);
-                    saveLocalCloudMirror();
-                }
-                if (callback) callback();
-            })
-            .catch(() => {
-                loadLocalCloudMirror();
-                applyRemoteCloudRecord(remoteCloudData);
-                if (callback) callback();
-            });
-        }
-
-        function saveCloudData() {
-            remoteCloudData.requests = globalRequests;
-            remoteCloudData.promoCodes = promoCodes;
-            remoteCloudData.liveDrops = liveDropsList.slice(0, 15);
-            remoteCloudData.siteContent = { cases: defaultCasesData, items: itemsData, theme: activeSiteTheme };
-            
-            if (currentUser) {
-                const cleanUser = getCurrentCleanUser();
-                if (!remoteCloudData.users) remoteCloudData.users = {};
-                remoteCloudData.users[cleanUser] = {
-                    balance: balance,
-                    inventory: inventory,
-                    usedPromos: usedPromos,
-                    freeCaseCooldownEnd: freeCaseCooldownEnd,
-                    refBalance: refBalance,
-                    refCount: refCount,
-                    diceHistory: diceHistory
-                };
-            }
-
-            saveLocalCloudMirror();
-
-            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_MASTER_KEY
-                },
-                body: JSON.stringify(remoteCloudData)
-            }).catch(() => {});
-        }
-
-        function toggleTurboMode() {
-            turboMode = !turboMode;
-            playSound('click');
-            const btn = document.getElementById('turbo-toggle-btn');
-            const txt = document.getElementById('turbo-status-text');
-            if (turboMode) {
-                btn.classList.add('active');
-                txt.innerText = 'Вкл (x3/x2)';
+        function updateFreeCaseTimerUI() {
+            const btn = document.getElementById('free-btn');
+            const priceText = document.getElementById('free-price-text');
+            if (!btn || !priceText) return;
+            const diff = freeCaseCooldownEnd - Date.now();
+            if (diff > 0) {
+                const hrs = Math.floor(diff / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                const secs = Math.floor((diff % 60000) / 1000);
+                priceText.innerText = `Через ${hrs}ч ${mins}м ${secs}с`;
+                btn.innerText = 'Перезарядка';
             } else {
-                btn.classList.remove('active');
-                txt.innerText = 'Выкл';
+                priceText.innerText = 'Бесплатно';
+                btn.innerText = 'Открыть';
             }
         }
 
-        function loadCustomContent() {
-            const customCases = localStorage.getItem('akirabrain_custom_cases');
-            if (customCases) {
-                try {
-                    const parsedCases = JSON.parse(customCases);
-                    if (parsedCases && Object.keys(parsedCases).length > 0) {
-                        defaultCasesData = parsedCases;
-                    }
-                } catch(e) {}
-            }
-
-            const customItems = localStorage.getItem('akirabrain_custom_items');
-            if (customItems) {
-                try {
-                    const parsedItems = JSON.parse(customItems);
-                    if (parsedItems && Object.keys(parsedItems).length > 0) {
-                        itemsData = parsedItems;
-                    }
-                } catch(e) {}
-            }
-            const savedTheme = localStorage.getItem('akirabrain_theme') || 'red';
-            applySiteTheme(savedTheme, false);
-        }
-
-        function filterCases(category, event) {
+        function openAuthModal() {
             playSound('click');
-            currentCaseFilter = category;
-            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
-            renderCasesGrid();
+            document.getElementById('admin-pass-container').style.display = 'none';
+            document.getElementById('admin-pass-input').value = '';
+            document.getElementById('auth-msg').innerText = '';
+            renderSavedAccountsList();
+            document.getElementById('auth-modal').style.display = 'flex';
         }
 
-        function renderCasesGrid() {
-            const container = document.getElementById('cases-grid-container');
-            if (!container) return;
-            let html = '';
-            let count = 0;
-
-            for (let key in defaultCasesData) {
-                const c = defaultCasesData[key];
-                const cat = c.category || 'regular';
-                if (currentCaseFilter !== 'all' && cat !== currentCaseFilter) continue;
-
-                count++;
-                const priceText = c.price === 0 ? "Бесплатно" : `${c.price} Braincoins`;
-                const borderColor = c.isAccent ? 'style="border-color: var(--accent);"' : '';
-                const titleColor = c.isAccent ? 'style="color: var(--accent);"' : '';
-                const btnId = key === 'free' ? 'id="free-btn"' : '';
-
-                html += `
-                <div class="case-card" ${borderColor} onclick="playSound('click'); openFullscreenCaseModal('${key}')">
-                    <div>
-                        <img src="${c.img}" alt="${c.title}" class="case-img">
-                        <div class="case-title" ${titleColor}>${c.title}</div>
-                        <div class="case-price" id="${key === 'free' ? 'free-price-text' : ''}">${priceText}</div>
-                    </div>
-                    <button class="btn" ${btnId} onclick="event.stopPropagation(); playSound('click'); openFullscreenCaseModal('${key}')">Открыть</button>
-                </div>`;
-            }
-            container.innerHTML = count === 0 ? '<div class="empty-text">В этой категории пока нет кейсов.</div>' : html;
-        }
-
-        function openFullscreenCaseModal(caseKey) {
-            currentSelectedCase = caseKey;
-            selectedOpenQty = 1;
-            
-            const caseData = defaultCasesData[caseKey];
-            document.getElementById('fs-case-img').src = caseData.img;
-            document.getElementById('fs-case-title').innerText = caseData.title;
-            document.getElementById('fs-case-price').innerText = caseData.price === 0 ? "Бесплатно" : `${caseData.price} Braincoins за 1 шт.`;
-
-            ['qty-btn-2', 'qty-btn-3', 'qty-btn-4', 'qty-btn-5'].forEach(id => {
-                document.getElementById(id).disabled = (caseKey === 'free');
-            });
-
-            document.querySelectorAll('.qty-num-btn').forEach((b, idx) => {
-                if (idx === 0) b.classList.add('active');
-                else b.classList.remove('active');
-            });
-
-            const itemsGrid = document.getElementById('fs-case-items-grid');
-            const pool = itemsData[caseKey] || itemsData['free'];
-            
-            let itemsHtml = '';
-            pool.forEach(it => {
-                itemsHtml += `
-                <div class="case-item-preview-card">
-                    <img src="${it.icon}" class="case-item-preview-img" alt="${it.name}">
-                    <div style="font-size: 0.75rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${it.name}">${it.name}</div>
-                    <div style="font-size: 0.7rem; color: var(--warning); margin-top: 2px;">${it.price} 🪙</div>
-                </div>`;
-            });
-            itemsGrid.innerHTML = itemsHtml;
-            document.getElementById('case-fullscreen-modal').style.display = 'flex';
-        }
-
-        function closeFullscreenCaseModal() {
-            playSound('click');
-            document.getElementById('case-fullscreen-modal').style.display = 'none';
-        }
-
-        function setOpenQty(qty, event) {
-            playSound('click');
-            if (currentSelectedCase === 'free' && qty > 1) return;
-            selectedOpenQty = qty;
-            document.querySelectorAll('.qty-num-btn').forEach(btn => btn.classList.remove('active'));
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
-            const caseData = defaultCasesData[currentSelectedCase];
-            if (caseData) {
-                const total = caseData.price * qty;
-                document.getElementById('fs-case-price').innerText = total === 0 ? "Бесплатно" : `${total} Braincoins за ${qty} шт.`;
-            }
-        }
-
-        function confirmAndOpenCase() {
-            playSound('click');
-            closeFullscreenCaseModal();
-            const caseKey = currentSelectedCase;
-            const qty = caseKey === 'free' ? 1 : selectedOpenQty;
-            const price = defaultCasesData[caseKey].price * qty;
-
-            if (caseKey === 'free') {
-                if (Date.now() < freeCaseCooldownEnd) {
-                    showToast('Бесплатный кейс еще на перезарядке!', 'error');
-                    return;
+        function renderSavedAccountsList() {
+            const listContainer = document.getElementById('saved-accounts-list');
+            if (!listContainer) return;
+            let savedAccounts = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith('akirabrain_data_')) {
+                    savedAccounts.push(k.replace('akirabrain_data_', ''));
                 }
-                freeCaseCooldownEnd = Date.now() + 24 * 3600000;
+            }
+            if (savedAccounts.length === 0) {
+                listContainer.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; padding: 10px;">Нет сохраненных аккаунтов. Создайте новый ниже!</div>';
+                return;
+            }
+            let html = '<div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px;">Ваши аккаунты:</div>';
+            savedAccounts.forEach(acc => {
+                const isCurrent = (currentUser && currentUser.toLowerCase() === acc.toLowerCase()) ? '<span style="color: var(--accent); font-size: 0.75rem;">(Текущий)</span>' : '';
+                html += `<div class="account-selector-item" onclick="switchAccount('${acc.replace(/'/g, "\\'")}')">
+                    <div style="font-weight: bold; font-size: 0.9rem;">👤 ${acc} ${isCurrent}</div>
+                    <div style="font-size: 0.8rem; color: var(--warning);">Войти ➔</div>
+                </div>`;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        function switchAccount(username) {
+            playSound('click');
+            if (username.toLowerCase() === 'akira') {
+                document.getElementById('auth-input').value = username;
+                document.getElementById('admin-pass-container').style.display = 'block';
+                document.getElementById('auth-msg').className = 'msg';
+                document.getElementById('auth-msg').innerText = 'Введите пароль администратора Akira';
+                return;
+            }
+            loadUserData(username);
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+
+        function registerUser() {
+            playSound('click');
+            const input = document.getElementById('auth-input').value.trim();
+            const msg = document.getElementById('auth-msg');
+            if (input.length < 2) {
+                msg.className = 'msg error';
+                msg.innerText = 'Ник должен быть не короче 2 символов!';
+                return;
+            }
+            let savedAccounts = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith('akirabrain_data_')) savedAccounts.push(k.replace('akirabrain_data_', ''));
+            }
+            const isAkira = input.toLowerCase() === 'akira';
+            const maxAllowed = isAkira ? 5 : 1;
+            const exists = savedAccounts.some(a => a.toLowerCase() === input.toLowerCase());
+
+            if (!exists && savedAccounts.length >= maxAllowed) {
+                msg.className = 'msg error';
+                msg.innerText = isAkira ? 'Лимит аккаунтов исчерпан (макс. 5)!' : 'Разрешён только 1 аккаунт на устройстве!';
+                return;
+            }
+            if (isAkira) {
+                document.getElementById('admin-pass-container').style.display = 'block';
+                msg.className = 'msg';
+                msg.innerText = 'Введите пароль администратора ниже:';
+                return;
+            }
+            const existingName = savedAccounts.find(a => a.toLowerCase() === input.toLowerCase()) || input;
+            loadUserData(existingName);
+            document.getElementById('auth-input').value = '';
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+
+        function confirmAdminLogin() {
+            playSound('click');
+            const pass = document.getElementById('admin-pass-input').value;
+            const msg = document.getElementById('auth-msg');
+            if (pass !== '12459567') {
+                msg.className = 'msg error';
+                msg.innerText = 'Неверный пароль администратора!';
+                return;
+            }
+            loadUserData('Akira');
+            document.getElementById('auth-input').value = '';
+            document.getElementById('admin-pass-input').value = '';
+            document.getElementById('admin-pass-container').style.display = 'none';
+            document.getElementById('auth-modal').style.display = 'none';
+            showToast('Вы вошли как администратор Akira!', 'success');
+        }
+
+        function loadUserData(username) {
+            currentUser = username;
+            localStorage.setItem('akirabrain_current_user', username);
+            document.getElementById('current-username').innerText = username;
+            document.getElementById('profile-badge').style.display = 'flex';
+
+            const cleanUser = getCurrentCleanUser();
+            if (remoteCloudData.users && remoteCloudData.users[cleanUser]) {
+                const u = remoteCloudData.users[cleanUser];
+                balance = Number(u.balance) || 0;
+                inventory = Array.isArray(u.inventory) ? u.inventory : [];
+                usedPromos = Array.isArray(u.usedPromos) ? u.usedPromos : [];
+                freeCaseCooldownEnd = u.freeCaseCooldownEnd || 0;
+                refBalance = Number(u.refBalance) || 0;
+                refCount = Number(u.refCount) || 0;
+                diceHistory = Array.isArray(u.diceHistory) ? u.diceHistory : [];
+            } else {
+                const raw = localStorage.getItem(`akirabrain_data_${username}`);
+                if (raw) {
+                    const p = JSON.parse(raw);
+                    balance = Number(p.balance) || 0;
+                    inventory = Array.isArray(p.inventory) ? p.inventory : [];
+                    usedPromos = Array.isArray(p.usedPromos) ? p.usedPromos : [];
+                    freeCaseCooldownEnd = p.freeCaseCooldownEnd || 0;
+                    refBalance = Number(p.refBalance) || 0;
+                    refCount = Number(p.refCount) || 0;
+                    diceHistory = Array.isArray(p.diceHistory) ? p.diceHistory : [];
+                } else {
+                    balance = 0;
+                    inventory = [];
+                    usedPromos = [];
+                    freeCaseCooldownEnd = 0;
+                    refBalance = 0;
+                    refCount = 0;
+                    diceHistory = [];
+                }
                 saveUserData();
-                wonItemsQueue = [getRandomItem(caseKey, itemsData[caseKey])];
-                startOpeningAnimationAndRun();
-            } else {
-                updateBalance(-price, (success) => {
-                    if (!success) return;
-                    wonItemsQueue = [];
-                    const pool = itemsData[caseKey] || itemsData['free'];
-                    for (let i = 0; i < qty; i++) wonItemsQueue.push(getRandomItem(caseKey, pool));
-                    startOpeningAnimationAndRun();
-                });
             }
+
+            document.getElementById('balance').innerText = balance;
+            renderInventory();
+            renderDiceHistory();
+            updateFreeCaseTimerUI();
+
+            const isAdmin = username.toLowerCase() === 'akira';
+            document.getElementById('nav-requests-btn').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('nav-admin-content-btn').style.display = isAdmin ? 'block' : 'none';
+        }
+
+        function saveUserData() {
+            if (!currentUser) return;
+            localStorage.setItem(`akirabrain_data_${currentUser}`, JSON.stringify({
+                balance, inventory, usedPromos, freeCaseCooldownEnd, refBalance, refCount, diceHistory
+            }));
+            saveCloudData();
+        }
+
+        function updateBalance(amountChange, callback) {
+            const newBalance = balance + amountChange;
+            if (newBalance < 0) {
+                showToast(`Не хватает Braincoins! У вас: ${balance}, нужно: ${Math.abs(amountChange)} 🪙`, 'error');
+                if (callback) callback(false);
+                return;
+            }
+            balance = newBalance;
+            document.getElementById('balance').innerText = balance;
+            saveUserData();
+            if (callback) callback(true);
+        }
+
+        function switchTab(tabId, event) {
+            playSound('click');
+            if ((tabId === 'requests' || tabId === 'admin-content') && (!currentUser || currentUser.toLowerCase() !== 'akira')) return;
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+            if (tabId === 'inventory') renderInventory();
+            if (tabId === 'profile') renderProfileTab();
+            if (tabId === 'referral') renderReferralTab();
+            if (tabId === 'upgrader') initUpgraderTab();
+            if (tabId === 'fuse') initHauntedFuseTab();
+            if (tabId === 'coloredice') { updateDiceControlUI(); renderDiceHistory(); }
+            if (tabId === 'requests') renderRequestsTable();
+            if (tabId === 'admin-content') initAdminContentPanel();
+        }
+
+        function getRandomItem(caseKey, pool) {
+            const list = (pool && pool.length > 0) ? pool : itemsData['free'];
+            const weightedPool = [];
+            list.forEach(item => {
+                let weight = item.chance !== undefined ? Number(item.chance) : (item.customWeight !== undefined ? Number(item.customWeight) : Math.max(2, Math.round(85 / Math.max(1, item.price))));
+                const copies = Math.max(1, Math.min(500, Math.round(weight * 10)));
+                for (let i = 0; i < copies; i++) weightedPool.push(item);
+            });
+            return weightedPool[Math.floor(Math.random() * weightedPool.length)];
         }
 
         function startOpeningAnimationAndRun() {
@@ -2468,7 +2708,7 @@
             const flyingImg = document.getElementById('opening-flying-case-img');
             const statusText = document.getElementById('case-opening-status-text');
 
-            const caseData = defaultCasesData[currentSelectedCase];
+            const caseData = defaultCasesData[currentSelectedCase] || defaultCasesData['free'];
             flyingImg.src = caseData.img;
             statusText.innerText = `Распаковываем ${caseData.title}...`;
 
@@ -2485,402 +2725,8 @@
                     openingStage.style.display = 'none';
                     rouletteStage.style.display = 'block';
                     openNextInQueue();
-                }, turboMode ? 200 : 500);
-            }, turboMode ? 400 : 1300);
-        }
-
-        function openAuthModal() {
-            playSound('click');
-            document.getElementById('admin-pass-container').style.display = 'none';
-            document.getElementById('admin-pass-input').value = '';
-            document.getElementById('auth-msg').innerText = '';
-            renderSavedAccountsList();
-            document.getElementById('auth-modal').style.display = 'flex';
-        }
-
-        function renderSavedAccountsList() {
-            const listContainer = document.getElementById('saved-accounts-list');
-            let savedAccounts = [];
-            
-            for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k.startsWith('akirabrain_data_')) {
-                    const accName = k.replace('akirabrain_data_', '');
-                    savedAccounts.push(accName);
-                }
-            }
-
-            if (savedAccounts.length === 0) {
-                listContainer.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; padding: 10px;">Нет сохраненных аккаунтов. Создайте новый ниже!</div>';
-                return;
-            }
-
-            let html = '<div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px;">Ранее созданные аккаунты:</div>';
-            savedAccounts.forEach(acc => {
-                const isCurrent = (currentUser && currentUser.toLowerCase() === acc.toLowerCase()) ? '<span style="color: var(--accent); font-size: 0.75rem;">(Текущий)</span>' : '';
-                html += `
-                <div class="account-selector-item" onclick="switchAccount('${acc.replace(/'/g, "\\'")}')">
-                    <div style="font-weight: bold; font-size: 0.9rem;">👤 ${acc} ${isCurrent}</div>
-                    <div style="font-size: 0.8rem; color: var(--warning);">Войти ➔</div>
-                </div>`;
-            });
-            listContainer.innerHTML = html;
-        }
-
-        function switchAccount(username) {
-            playSound('click');
-            if (username.toLowerCase() === 'akira') {
-                document.getElementById('auth-input').value = username;
-                document.getElementById('admin-pass-container').style.display = 'block';
-                document.getElementById('admin-pass-input').focus();
-                return;
-            }
-            loadUserData(username);
-            document.getElementById('auth-modal').style.display = 'none';
-        }
-
-        function registerUser() {
-            playSound('click');
-            const input = document.getElementById('auth-input').value.trim();
-            const msg = document.getElementById('auth-msg');
-
-            if (input.length < 2) {
-                msg.className = "msg error";
-                msg.innerText = "Имя должно быть не менее 2 символов!";
-                return;
-            }
-
-            let savedAccounts = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
-                if (k.startsWith('akirabrain_data_')) {
-                    savedAccounts.push(k.replace('akirabrain_data_', ''));
-                }
-            }
-
-            const isAkira = input.toLowerCase() === 'akira';
-            const maxAllowedAccounts = isAkira ? 5 : 1;
-            const accountExists = savedAccounts.some(acc => acc.toLowerCase() === input.toLowerCase());
-
-            if (!accountExists && savedAccounts.length >= maxAllowedAccounts) {
-                msg.className = "msg error";
-                msg.innerText = isAkira 
-                    ? "Достигнут лимит (максимум 5 аккаунтов для Akira)!" 
-                    : "Достигнут лимит (разрешен только 1 аккаунт)!";
-                return;
-            }
-
-            if (isAkira) {
-                document.getElementById('admin-pass-container').style.display = 'block';
-                document.getElementById('admin-pass-input').focus();
-                msg.className = "msg";
-                msg.innerText = "Введите пароль администратора Akira";
-                return;
-            }
-
-            loadUserData(input);
-            document.getElementById('auth-input').value = '';
-            document.getElementById('auth-modal').style.display = 'none';
-        }
-
-        function confirmAdminLogin() {
-            const input = document.getElementById('auth-input').value.trim() || 'Akira';
-            const pass = document.getElementById('admin-pass-input').value;
-            const msg = document.getElementById('auth-msg');
-
-            if (pass !== "12459567") {
-                msg.className = "msg error";
-                msg.innerText = "Неверный пароль администратора!";
-                return;
-            }
-
-            loadUserData(input);
-            document.getElementById('auth-input').value = '';
-            document.getElementById('admin-pass-input').value = '';
-            document.getElementById('admin-pass-container').style.display = 'none';
-            document.getElementById('auth-modal').style.display = 'none';
-            showToast('Добро пожаловать в панель администратора Akira!', 'success');
-        }
-
-        function getCurrentCleanUser() {
-            if (!currentUser) return null;
-            return currentUser.trim().toLowerCase().replace(/[.#$\[\]]/g, "_");
-        }
-
-        function loadUserData(username) {
-            currentUser = username;
-            localStorage.setItem('akirabrain_current_user', username);
-            
-            document.getElementById('current-username').innerText = username;
-            document.getElementById('profile-badge').style.display = 'flex';
-            
-            const cleanUser = getCurrentCleanUser();
-            const userKey = `akirabrain_data_${username}`;
-            const savedData = localStorage.getItem(userKey);
-
-            if (remoteCloudData.users && remoteCloudData.users[cleanUser]) {
-                const uData = remoteCloudData.users[cleanUser];
-                balance = uData.balance !== undefined ? uData.balance : 0;
-                inventory = Array.isArray(uData.inventory) ? uData.inventory : [];
-                usedPromos = uData.usedPromos || [];
-                freeCaseCooldownEnd = uData.freeCaseCooldownEnd || 0;
-                refBalance = uData.refBalance || 0;
-                refCount = uData.refCount || 0;
-                diceHistory = uData.diceHistory || [];
-            } else if (savedData) {
-                const parsed = JSON.parse(savedData);
-                balance = parsed.balance !== undefined ? parsed.balance : 0;
-                inventory = Array.isArray(parsed.inventory) ? parsed.inventory : [];
-                usedPromos = parsed.usedPromos || [];
-                freeCaseCooldownEnd = parsed.freeCaseCooldownEnd || 0;
-                refBalance = parsed.refBalance || 0;
-                refCount = parsed.refCount || 0;
-                diceHistory = parsed.diceHistory || [];
-            } else {
-                balance = 0;
-                inventory = [];
-                usedPromos = [];
-                freeCaseCooldownEnd = 0;
-                refBalance = 0;
-                refCount = 0;
-                diceHistory = [];
-            }
-            saveUserData();
-
-            document.getElementById('balance').innerText = balance;
-            renderDiceHistory();
-            renderInventory();
-
-            const navRequestsBtn = document.getElementById('nav-requests-btn');
-            const navAdminContentBtn = document.getElementById('nav-admin-content-btn');
-
-            if (username.toLowerCase() === 'akira') {
-                navRequestsBtn.style.display = 'block';
-                navAdminContentBtn.style.display = 'block';
-            } else {
-                navRequestsBtn.style.display = 'none';
-                navAdminContentBtn.style.display = 'none';
-            }
-        }
-
-        function saveUserData() {
-            if (!currentUser) return;
-            const userKey = `akirabrain_data_${currentUser}`;
-            localStorage.setItem(userKey, JSON.stringify({ balance, inventory, usedPromos, freeCaseCooldownEnd, refBalance, refCount, diceHistory }));
-            saveCloudData();
-        }
-
-        function updateBalance(amountChange, callback) {
-            const newBalance = balance + amountChange;
-            if (newBalance < 0) {
-                showToast(`Не хватает Braincoins! У тебя: ${balance}, нужно: ${Math.abs(amountChange)}.`, 'error');
-                if (callback) callback(false);
-                return;
-            }
-            balance = newBalance;
-            document.getElementById('balance').innerText = balance;
-            saveUserData();
-            if (callback) callback(true);
-        }
-
-        setInterval(() => {
-            const now = Date.now();
-            const btn = document.getElementById('free-btn');
-            const priceText = document.getElementById('free-price-text');
-            if (btn && priceText) {
-                if (now < freeCaseCooldownEnd) {
-                    const diff = Math.ceil((freeCaseCooldownEnd - now) / 1000);
-                    const hours = Math.floor(diff / 3600);
-                    const minutes = Math.floor((diff % 3600) / 60);
-                    const seconds = diff % 60;
-                    btn.disabled = true;
-                    priceText.innerText = `Доступно через ${hours}ч ${minutes}м ${seconds}с`;
-                } else {
-                    btn.disabled = false;
-                    priceText.innerText = `Бесплатно`;
-                }
-            }
-        }, 1000);
-
-        function switchTab(tabId, event) {
-            playSound('click');
-            if ((tabId === 'requests' || tabId === 'admin-content') && (!currentUser || currentUser.toLowerCase() !== 'akira')) return;
-
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            if(event && event.currentTarget) event.currentTarget.classList.add('active');
-            
-            if(tabId === 'inventory') renderInventory();
-            if(tabId === 'profile') renderProfileTab();
-            if(tabId === 'referral') renderReferralTab();
-            if(tabId === 'upgrader') initUpgraderTab();
-            if(tabId === 'fuse') initHauntedFuseTab();
-            if(tabId === 'coloredice') { updateDiceControlUI(); renderDiceHistory(); }
-            if(tabId === 'requests') renderRequestsTable();
-            if(tabId === 'admin-content') initAdminContentPanel();
-        }
-
-        function renderProfileTab() {
-            if (currentUser) {
-                document.getElementById('deposit-roblox-nick').value = currentUser;
-                document.getElementById('withdraw-roblox-nick').value = currentUser;
-            }
-            if (!document.getElementById('deposit-time-input').value) document.getElementById('deposit-time-input').value = 'Сегодня после 18:00';
-            if (!document.getElementById('withdraw-time-input').value) document.getElementById('withdraw-time-input').value = 'Сегодня после 18:00';
-            renderDepositCatalog();
-            renderWithdrawPicker();
-            renderUserRequestsHistory();
-        }
-
-        function renderUserRequestsHistory() {
-            const container = document.getElementById('user-requests-history');
-            if (!container || !currentUser) return;
-            const myReqs = globalRequests.filter(r => r.user && r.user.toLowerCase() === currentUser.toLowerCase());
-            if (myReqs.length === 0) {
-                container.innerHTML = '<div class="empty-text" style="padding: 15px;">У вас пока нет заявок</div>';
-                return;
-            }
-            let html = `<table class="requests-table"><thead><tr><th>Тип</th><th>Ник / Время</th><th>Предметы</th><th>Статус</th></tr></thead><tbody>`;
-            myReqs.forEach(req => {
-                const typeText = req.type === 'deposit' ? '💳 Пополнение' : '📤 Вывод';
-                const statusHtml = req.status === 'approved'
-                    ? '<span style="color:#2ed573;font-weight:bold;">✓ Подтверждено</span>'
-                    : (req.status === 'rejected'
-                        ? '<span style="color:var(--danger);font-weight:bold;">✕ Отклонено</span>'
-                        : '<span style="color:var(--warning);font-weight:bold;">⏳ Ожидает</span>');
-                html += `<tr><td>${typeText}</td><td>${req.nick}<br><small style="color:var(--text-secondary)">${req.tradeTime}</small></td><td>${req.item}</td><td>${statusHtml}</td></tr>`;
-            });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
-
-        function getAllUniqueBrainrots() {
-            const all=[]; Object.values(itemsData).forEach(pool=>(pool||[]).forEach(it=>{ if(!all.some(x=>x.name.toLowerCase()===it.name.toLowerCase())) all.push({...it}); }));
-            return all.sort((a,b)=>a.price-b.price);
-        }
-
-        function renderDepositCatalog() {
-            const el=document.getElementById('deposit-catalog'); if(!el)return;
-            const list=getAllUniqueBrainrots().filter(it=>Number(it.price)>=50);
-            el.innerHTML=list.map(it=>{
-                const k=encodeURIComponent(it.name);
-                const qty=selectedDepositItems[k]?.qty||0;
-                const pay=Math.round(Number(it.price)*.85*100)/100;
-                return `<div class="select-card ${qty?'selected':''}">
-                    <img src="${it.icon}" alt="">
-                    <b style="font-size:.75rem">${it.name}</b>
-                    <div style="color:var(--warning);font-weight:bold;margin-top:4px">${pay} 🪙</div>
-                    <small style="color:var(--text-secondary)">На сайте: ${it.price}</small>
-                    <div class="qty-controls">
-                        <button type="button" onclick="changeDepositQty('${k}',-1)">−</button>
-                        <b>${qty}</b>
-                        <button type="button" onclick="changeDepositQty('${k}',1)">+</button>
-                    </div>
-                </div>`;
-            }).join('') || '<div class="empty-text">В каталоге пока нет предметов от 50 коинов</div>';
-            const total=Object.values(selectedDepositItems).reduce((a,x)=>a+x.qty,0);
-            const totalCoins=Object.values(selectedDepositItems).reduce((a,x)=>a+x.qty*x.pay,0);
-            document.getElementById('deposit-selected-summary').innerText=`Выбрано: ${total}/10 · Сумма: ${Math.round(totalCoins)} 🪙`;
-        }
-
-        function changeDepositQty(encoded,delta){
-            const k=encoded;
-            const item=getAllUniqueBrainrots().find(x=>encodeURIComponent(x.name)===k);
-            if(!item)return;
-            const total=Object.values(selectedDepositItems).reduce((a,x)=>a+x.qty,0);
-            const cur=selectedDepositItems[k]?.qty||0;
-            if(delta>0&&total>=10) {
-                showToast('Максимум 10 предметов за одну заявку!', 'error');
-                return;
-            }
-            const next=cur+delta;
-            if(next<=0) delete selectedDepositItems[k];
-            else selectedDepositItems[k]={name:item.name,price:item.price,pay:Math.round(item.price*.85*100)/100,icon:item.icon,qty:next};
-            renderDepositCatalog();
-        }
-
-        function sendDepositRequest() {
-            playSound('click');
-            if (!currentUser) { showToast('Сначала войдите в аккаунт!', 'error'); openAuthModal(); return; }
-            const nick=document.getElementById('deposit-roblox-nick').value.trim();
-            const refCode=document.getElementById('deposit-ref-code').value.trim();
-            const tradeTime=document.getElementById('deposit-time-input').value.trim();
-            const msg=document.getElementById('deposit-msg');
-            const chosen=Object.values(selectedDepositItems);
-            const total=chosen.reduce((a,x)=>a+x.qty,0);
-
-            if(!nick||!tradeTime||total<1){
-                msg.className='msg error';
-                msg.innerText='Укажи ник, время и выбери хотя бы один предмет.';
-                return;
-            }
-            if(refCode&&currentUser&&refCode.toLowerCase()===currentUser.toLowerCase()){
-                msg.className='msg error';
-                msg.innerText='Нельзя указывать собственный ник как реферальный.';
-                return;
-            }
-
-            const reward=Math.round(chosen.reduce((a,x)=>a+x.qty*x.pay,0));
-            globalRequests.unshift({
-                id: 'req_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
-                type:'deposit',
-                user:currentUser,
-                nick,
-                refCode,
-                tradeTime,
-                items:chosen.map(x=>({...x})),
-                item:chosen.map(x=>`${x.name} ×${x.qty}`).join(', '),
-                rewardCoins:reward,
-                time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
-                status:'pending'
-            });
-
-            saveCloudData();
-            selectedDepositItems={};
-            renderDepositCatalog();
-            renderUserRequestsHistory();
-            msg.className='msg success';
-            msg.innerText=`Заявка на пополнение (${reward} 🪙) успешно отправлена!`;
-            showToast('Заявка на пополнение отправлена!', 'success');
-        }
-
-        function renderReferralTab() {
-            if (!currentUser) return;
-            document.getElementById('ref-code-display').innerText = currentUser;
-            document.getElementById('ref-count-display').innerText = refCount;
-            document.getElementById('ref-balance-display').innerText = refBalance + ' 🪙';
-        }
-
-        function claimReferralBalance() {
-            playSound('click');
-            const msg = document.getElementById('ref-msg');
-            if (refBalance <= 0) {
-                msg.className = "msg error";
-                msg.innerText = "На реферальном балансе нет коинов!";
-                return;
-            }
-            const amountToClaim = refBalance;
-            refBalance = 0;
-            saveUserData();
-            renderReferralTab();
-            updateBalance(amountToClaim, (success) => {
-                if (success) {
-                    msg.className = "msg success";
-                    msg.innerText = `Успешно собрано ${amountToClaim} 🪙!`;
-                    setTimeout(() => { msg.innerText = ""; }, 4000);
-                }
-            });
-        }
-
-        function getRandomItem(caseKey, pool) {
-            if (!pool || !pool.length) return null;
-            const weights = pool.map(item => Math.max(0.01, Number(item.chance ?? item.customWeight ?? Math.max(2, 85 / Math.max(1,item.price)))));
-            const total = weights.reduce((a,b)=>a+b,0);
-            let roll = Math.random() * total;
-            for (let i=0;i<pool.length;i++) { roll -= weights[i]; if (roll <= 0) return pool[i]; }
-            return pool[pool.length-1];
+                }, turboMode ? 150 : 450);
+            }, turboMode ? 300 : 1100);
         }
 
         function openNextInQueue() {
@@ -2889,10 +2735,11 @@
             const pool = itemsData[currentSelectedCase] || itemsData['free'];
 
             const track = document.getElementById('roulette-track');
+            track.style.transform = 'translate3d(0px, 0, 0)';
             track.innerHTML = '';
-            const winningIndex = 70;
+            const winningIndex = 65;
             let itemsHTML = '';
-            for(let i = 0; i < 80; i++) {
+            for (let i = 0; i < 75; i++) {
                 const item = (i === winningIndex) ? winningItem : pool[Math.floor(Math.random() * pool.length)];
                 itemsHTML += `<div class="roulette-item"><img src="${item.icon}" class="roulette-item-img"><div class="roulette-item-name">${item.name}</div><div class="roulette-item-price">${item.price} 🪙</div></div>`;
             }
@@ -2905,9 +2752,9 @@
 
             setTimeout(() => {
                 const itemWidth = 160;
-                const containerWidth = document.getElementById('track-container').clientWidth;
+                const containerWidth = document.getElementById('track-container').clientWidth || 600;
                 const targetPixel = (winningIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2);
-                let currentPixel = 0, startTime = null, duration = turboMode ? 400 : 9500;
+                let currentPixel = 0, startTime = null, duration = turboMode ? 450 : 6500;
                 let lastTickPixel = 0;
 
                 function animateSpin(timestamp) {
@@ -2927,8 +2774,8 @@
                     } else {
                         playSound('open');
                         wonItemsQueue.shift();
-                        const uniqueId = 'item_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-                        const activePlayerName = currentUser || "Игрок";
+                        const uniqueId = 'item_' + Date.now() + '_' + Math.random();
+                        const activePlayerName = currentUser || 'Игрок';
                         pushLiveDrop(activePlayerName, winningItem);
                         checkAndUpdateBestDrop(activePlayerName, winningItem);
 
@@ -2947,56 +2794,45 @@
             }, 50);
         }
 
-        function getLocalDayKey(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-        function checkAndUpdateBestDrop(username,item){
-            if(!item||!Number.isFinite(Number(item.price)))return;
-            const today=getLocalDayKey();
-            if(!remoteCloudData.bestDrop||remoteCloudData.bestDrop.day!==today||Number(item.price)>Number(remoteCloudData.bestDrop.price||0)){
-                remoteCloudData.bestDrop={day:today,name:item.name,price:Number(item.price),icon:item.icon,user:username||'Игрок',createdAt:Date.now()};
-                updateBestDropBanner(remoteCloudData.bestDrop);saveCloudData();
-            }
-        }
-        function updateBestDropBanner(drop){
-            const img=document.getElementById('best-drop-img'),name=document.getElementById('best-drop-name'),user=document.getElementById('best-drop-user');if(!img||!name||!user)return;
-            if(!drop||drop.day!==getLocalDayKey()){img.style.display='none';img.removeAttribute('src');name.innerText='Пока нет выпадений';user.innerText='—';return;}
-            img.src=drop.icon||'';img.style.display=drop.icon?'inline-block':'none';name.innerText=`${drop.name} (${drop.price} 🪙)`;user.innerText=drop.user||'Игрок';
-        }
-
-        function actionKeep(name, price, icon, id) { 
+        function actionKeep(name, price, icon, id) {
             playSound('click');
-            inventory.push({ name, price, icon, id, locked: false }); 
+            inventory.push({ name, price, icon, id, locked: false });
             saveUserData();
             renderInventory();
-            proceedNextOrClose(); 
+            proceedNextOrClose();
         }
 
-        function actionSellNow(price) { 
+        function actionSellNow(price) {
             playSound('click');
-            updateBalance(price, (success) => { if (success) proceedNextOrClose(); }); 
+            updateBalance(price, (success) => {
+                if (success) proceedNextOrClose();
+            });
         }
 
-        function proceedNextOrClose() { 
-            if (wonItemsQueue.length > 0) openNextInQueue(); 
-            else document.getElementById('roulette-modal').style.display = 'none'; 
+        function proceedNextOrClose() {
+            if (wonItemsQueue.length > 0) openNextInQueue();
+            else document.getElementById('roulette-modal').style.display = 'none';
         }
 
         function renderInventory() {
             const grid = document.getElementById('inventory-grid');
+            const countLabel = document.getElementById('inventory-count-label');
+            if (countLabel) countLabel.innerText = `Предметов: ${inventory.length}`;
             if (!grid) return;
-            document.getElementById('inventory-count-label').innerText = `Предметов: ${inventory.length}`;
 
-            if(inventory.length === 0) { 
-                grid.innerHTML = '<div class="empty-text">Ваш инвентарь пуст. Откройте кейсы!</div>'; 
-                return; 
+            if (inventory.length === 0) {
+                grid.innerHTML = '<div class="empty-text">Ваш инвентарь пуст. Откройте кейсы!</div>';
+                return;
             }
 
             let html = '';
             inventory.forEach((item, index) => {
-                if (!item.id) item.id = 'item_' + Date.now() + '_' + index;
                 const lockedClass = item.locked ? 'locked' : '';
-                const lockBadge = item.locked ? '<div class="lock-badge">🔒 Под замком</div>' : '';
-                const sellBtn = item.locked ? '<div style="font-size:0.75rem; color:var(--warning); padding:6px;">Ожидает вывода</div>' : `<button class="btn-sell" onclick="sellItem(${index})">Продать</button>`;
-                
+                const lockBadge = item.locked ? '<div class="lock-badge">🔒 В заявке</div>' : '';
+                const sellBtn = item.locked
+                    ? '<div style="font-size:0.75rem; color:var(--warning); padding:6px;">Заблокирован</div>'
+                    : `<button class="btn-sell" onclick="sellItem(${index})">Продать (${item.price} 🪙)</button>`;
+
                 html += `<div class="inv-card ${lockedClass}">
                     ${lockBadge}
                     <div>
@@ -3013,135 +2849,56 @@
         function sellItem(index) {
             playSound('click');
             if (!inventory[index] || inventory[index].locked) return;
-            const itemPrice = inventory[index].price;
-            updateBalance(itemPrice, (success) => {
+            const price = inventory[index].price;
+            updateBalance(price, (success) => {
                 if (success) {
                     inventory.splice(index, 1);
                     saveUserData();
                     renderInventory();
+                    showToast(`Продано за ${price} 🪙`, 'success');
                 }
             });
         }
 
         function sellAllInventoryItems() {
             playSound('click');
-            const unlockedItems = inventory.filter(it => !it.locked);
-            if (unlockedItems.length === 0) { showToast("Нет незаблокированных предметов для продажи!", 'error'); return; }
-            let totalSum = 0;
-            unlockedItems.forEach(it => totalSum += it.price);
-
-            showConfirmModal(`Продать все незаблокированные предметы (${unlockedItems.length} шт.) на сумму ${totalSum} 🪙?`, () => {
-                updateBalance(totalSum, (success) => {
+            const unlocked = inventory.filter(it => !it.locked);
+            if (unlocked.length === 0) {
+                showToast('Нет доступных предметов для продажи!', 'error');
+                return;
+            }
+            const total = unlocked.reduce((sum, it) => sum + Number(it.price || 0), 0);
+            showConfirmModal(`Продать все незаблокированные предметы (${unlocked.length} шт.) за ${total} 🪙?`, () => {
+                updateBalance(total, (success) => {
                     if (success) {
                         inventory = inventory.filter(it => it.locked);
                         saveUserData();
                         renderInventory();
-                        showToast(`Продано на ${totalSum} 🪙!`, 'success');
+                        showToast(`Продано ${unlocked.length} предметов на ${total} 🪙!`, 'success');
                     }
                 });
             });
         }
 
-        function renderWithdrawPicker() {
-            const picker=document.getElementById('withdraw-inventory-picker');if(!picker)return;
-            // Очищаем индексы, если предметы уже пропали или заблокированы
-            selectedWithdrawIndices = selectedWithdrawIndices.filter(idx => inventory[idx] && !inventory[idx].locked && Number(inventory[idx].price) >= 50);
-
-            const available=inventory.map((item,index)=>({...item,originalIndex:index})).filter(x=>Number(x.price)>=50&&!x.locked);
-            picker.innerHTML=available.length?available.map(item=>{
-                const selected=selectedWithdrawIndices.includes(item.originalIndex);
-                return `<div class="select-card ${selected?'selected':''}" onclick="toggleWithdrawItem(${item.originalIndex})">
-                    <img src="${item.icon}" alt="">
-                    <b style="font-size:.72rem">${item.name}</b>
-                    <div style="color:var(--warning)">${item.price} 🪙</div>
-                    <small>${selected?'✓ Выбран':'Нажми, чтобы выбрать'}</small>
-                </div>`;
-            }).join(''):'<div class="empty-text">Нет доступных предметов от 50 коинов</div>';
-            updateWithdrawSelectionInfo();
-        }
-
-        function toggleWithdrawItem(index){
-            playSound('click');
-            if(selectedWithdrawIndices.includes(index)) {
-                selectedWithdrawIndices=selectedWithdrawIndices.filter(x=>x!==index);
-            } else if(selectedWithdrawIndices.length<10) {
-                selectedWithdrawIndices.push(index);
-            } else {
-                showToast('Максимум 10 предметов на вывод!', 'error');
-            }
-            renderWithdrawPicker();
-        }
-
-        function updateWithdrawSelectionInfo(){
-            const el=document.getElementById('selected-withdraw-item-info');if(!el)return;
-            const chosen=selectedWithdrawIndices.map(i=>inventory[i]).filter(Boolean);
-            const sum=chosen.reduce((a,x)=>a+Number(x.price||0),0);
-            el.innerText=`Выбрано: ${chosen.length}/10 · Общая стоимость: ${sum} 🪙`;
-        }
-
-        function sendWithdrawRequest(){
-            playSound('click');
-            if (!currentUser) { showToast('Сначала войдите в аккаунт!', 'error'); openAuthModal(); return; }
-            const nick=document.getElementById('withdraw-roblox-nick').value.trim();
-            const tradeTime=document.getElementById('withdraw-time-input').value.trim();
-            const msg=document.getElementById('withdraw-msg');
-            const chosen=selectedWithdrawIndices.map(i=>({index:i,item:inventory[i]})).filter(x=>x.item&&!x.item.locked&&Number(x.item.price)>=50);
-
-            if(!nick||!tradeTime||!chosen.length){
-                msg.className='msg error';
-                msg.innerText='Укажи ник, удобное время и выбери хотя бы один предмет от 50 🪙.';
-                return;
-            }
-
-            chosen.forEach(x=>{
-                if (!x.item.id) x.item.id = 'item_' + Date.now() + '_' + Math.random();
-                x.item.locked=true;
-            });
-
-            globalRequests.unshift({
-                id: 'req_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
-                type:'withdraw',
-                user:currentUser,
-                inventoryIndices:chosen.map(x=>x.index),
-                nick,
-                tradeTime,
-                items:chosen.map(x=>({...x.item})),
-                inventoryItemIds:chosen.map(x=>x.item.id),
-                item:chosen.map(x=>`${x.item.name} (${x.item.price} 🪙)`).join(', '),
-                time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
-                status:'pending'
-            });
-
-            selectedWithdrawIndices=[];
-            saveUserData();
-            renderProfileTab();
-            renderInventory();
-            msg.className='msg success';
-            msg.innerText='Заявка на вывод отправлена! Выбранные предметы заблокированы до обработки.';
-            showToast('Заявка на вывод отправлена!', 'success');
-        }
-
         function initHauntedFuseTab() {
             selectedFuseIndices = [];
+            applyFuseSettings();
             renderHauntedFusePicker();
             updateHauntedFuseStats();
         }
 
         function renderHauntedFusePicker() {
             const grid = document.getElementById('fuse-inventory-grid');
-            const usableItems = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
-
-            if (usableItems.length === 0) {
-                grid.innerHTML = '<div class="empty-text">Нет доступных предметов для Winter Fuse</div>';
-                selectedFuseIndices = [];
-                updateHauntedFuseStats();
+            if (!grid) return;
+            const usable = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
+            if (usable.length === 0) {
+                grid.innerHTML = '<div class="empty-text">Нет доступных предметов для фьюза</div>';
                 return;
             }
-
             let html = '';
-            usableItems.forEach((item) => {
-                const isSelected = selectedFuseIndices.includes(item.originalIndex) ? 'selected' : '';
-                html += `<div class="inv-card ${isSelected}" style="padding: 8px;" onclick="toggleHauntedFuseItem(${item.originalIndex})">
+            usable.forEach(item => {
+                const isSel = selectedFuseIndices.includes(item.originalIndex) ? 'selected' : '';
+                html += `<div class="inv-card ${isSel}" style="padding: 8px;" onclick="toggleHauntedFuseItem(${item.originalIndex})">
                     <div>
                         <img src="${item.icon}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px; margin: 0 auto 4px;">
                         <div class="inv-item-name" style="font-size: 0.8rem;">${item.name}</div>
@@ -3154,11 +2911,14 @@
 
         function toggleHauntedFuseItem(index) {
             playSound('click');
-            if (inventory[index].locked) return;
+            if (!inventory[index] || inventory[index].locked) return;
             const pos = selectedFuseIndices.indexOf(index);
             if (pos > -1) selectedFuseIndices.splice(pos, 1);
             else {
-                if (selectedFuseIndices.length >= 10) { showToast("Максимум 10 предметов!", 'error'); return; }
+                if (selectedFuseIndices.length >= 10) {
+                    showToast('Максимум 10 предметов для Fuse!', 'error');
+                    return;
+                }
                 selectedFuseIndices.push(index);
             }
             renderHauntedFusePicker();
@@ -3167,16 +2927,15 @@
 
         function updateHauntedFuseStats() {
             document.getElementById('fuse-count').innerText = selectedFuseIndices.length;
-            let totalPrice = 0;
-            selectedFuseIndices.forEach(idx => { if (inventory[idx]) totalPrice += inventory[idx].price; });
-            document.getElementById('fuse-total-price').innerText = totalPrice + ' 🪙';
+            let total = 0;
+            selectedFuseIndices.forEach(idx => { if (inventory[idx]) total += Number(inventory[idx].price || 0); });
+            document.getElementById('fuse-total-price').innerText = total + ' 🪙';
             document.getElementById('fuse-action-btn').disabled = !(selectedFuseIndices.length >= 3 && selectedFuseIndices.length <= 10);
         }
 
         function executeHauntedFuse() {
             playSound('open');
             if (selectedFuseIndices.length < 3) return;
-
             const mainBox = document.getElementById('haunted-fuse-main-box');
             mainBox.classList.add('shaking');
             document.getElementById('fuse-action-btn').disabled = true;
@@ -3184,724 +2943,311 @@
             setTimeout(() => {
                 mainBox.classList.remove('shaking');
                 let totalPrice = 0;
-                selectedFuseIndices.forEach(idx => { if (inventory[idx]) totalPrice += inventory[idx].price; });
-
+                selectedFuseIndices.forEach(idx => { if (inventory[idx]) totalPrice += Number(inventory[idx].price || 0); });
                 selectedFuseIndices.sort((a, b) => b - a).forEach(idx => inventory.splice(idx, 1));
 
-                let allPools = [];
-                Object.values(itemsData).forEach(pool => pool.forEach(it => { if(!allPools.some(x => x.name === it.name)) allPools.push(it); }));
+                const allPools = getAllUniqueBrainrots();
+                const minP = Math.max(1, Math.round(totalPrice * 0.6));
+                const maxP = Math.max(15, Math.round(totalPrice * 1.8));
+                let filtered = allPools.filter(it => it.price >= minP && it.price <= maxP);
+                if (filtered.length === 0) filtered = allPools;
 
-                let minP = totalPrice >= 180 ? 75 : (totalPrice >= 80 ? 25 : 1);
-                let maxP = totalPrice >= 180 ? 500 : (totalPrice >= 80 ? 300 : Math.max(50, totalPrice * 2));
-                let filteredPool = allPools.filter(it => it.price >= minP && it.price <= maxP);
-                if (filteredPool.length === 0) filteredPool = allPools;
-
-                const rewardItem = filteredPool[Math.floor(Math.random() * filteredPool.length)];
-                const newItem = { name: rewardItem.name, price: rewardItem.price, icon: rewardItem.icon, id: 'item_' + Date.now() + '_' + Math.random(), locked: false };
-
+                const reward = filtered[Math.floor(Math.random() * filtered.length)];
+                const newItem = { name: reward.name, price: reward.price, icon: reward.icon, id: 'item_' + Date.now() + '_' + Math.random(), locked: false };
                 inventory.push(newItem);
                 saveUserData();
                 initHauntedFuseTab();
                 renderInventory();
-                checkAndUpdateBestDrop(currentUser || "Игрок", rewardItem);
+
+                const activePlayerName = currentUser || 'Игрок';
+                pushLiveDrop(activePlayerName, newItem);
+                checkAndUpdateBestDrop(activePlayerName, newItem);
 
                 document.getElementById('upgrade-modal-result-text').innerHTML = `
-                    <span style="color: var(--accent);">🔮 ФЬЮЗ УСПЕШЕН! Призвано:</span><br><br>
+                    <span style="color: var(--accent);">❄️ FUSE УСПЕШЕН! Получен:</span><br><br>
                     <img src="${newItem.icon}" class="summon-animation" style="width: 90px; height: 90px; object-fit: cover; border-radius: 16px; margin: 10px 0; border: 2px solid var(--accent);"><br>
                     <div style="color: var(--warning); font-size: 1.2rem;">${newItem.name} (${newItem.price} 🪙)</div>
                 `;
                 document.getElementById('upgrade-result-modal').style.display = 'flex';
-            }, 1200);
+            }, turboMode ? 400 : 1200);
         }
 
-        function renderDicePalette() {
-            const container = document.getElementById('dice-palette-container');
-            let html = '';
-            diceColors.forEach(c => {
-                const selectedClass = (diceSelectedColor === c.name) ? 'selected' : '';
-                html += `<div class="dice-color-option ${selectedClass}" style="background-color: ${c.hex};" onclick="selectDiceColor('${c.name}')"></div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function selectDiceColor(colorName) {
-            playSound('click');
-            diceSelectedColor = colorName;
-            renderDicePalette();
-            updateDiceControlUI();
-        }
-
-        function openDiceItemPicker() {
-            playSound('click');
-            const grid = document.getElementById('dice-picker-inventory-grid');
-            const usableItems = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
-
-            if (usableItems.length === 0) {
-                grid.innerHTML = '<div class="empty-text">Нет доступных предметов</div>';
-            } else {
-                let html = '';
-                usableItems.forEach(item => {
-                    html += `<div class="inv-card" onclick="pickDiceBetItem(${item.originalIndex})">
-                        <div>
-                            <img src="${item.icon}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px; margin: 0 auto 2px;">
-                            <div class="inv-item-name" style="font-size: 0.8rem;">${item.name}</div>
-                            <div class="inv-item-price" style="font-size: 0.75rem;">${item.price} 🪙</div>
-                        </div>
-                    </div>`;
-                });
-                grid.innerHTML = html;
+        function renderProfileTab() {
+            if (currentUser) {
+                const depNick = document.getElementById('deposit-roblox-nick');
+                const witNick = document.getElementById('withdraw-roblox-nick');
+                if (depNick && !depNick.value) depNick.value = currentUser;
+                if (witNick && !witNick.value) witNick.value = currentUser;
             }
-            document.getElementById('dice-picker-modal').style.display = 'flex';
-        }
-
-        function closeDicePickerModal() {
-            playSound('click');
-            document.getElementById('dice-picker-modal').style.display = 'none';
-        }
-
-        function pickDiceBetItem(index) {
-            playSound('click');
-            diceSelectedBetIndex = index;
-            closeDicePickerModal();
-            updateDiceControlUI();
-        }
-
-        function updateDiceControlUI() {
-            const box = document.getElementById('dice-selected-item-box');
-            const playBtn = document.getElementById('dice-play-btn');
-
-            if (diceSelectedBetIndex !== null && inventory[diceSelectedBetIndex] && !inventory[diceSelectedBetIndex].locked) {
-                const it = inventory[diceSelectedBetIndex];
-                box.innerHTML = `<img src="${it.icon}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;"> <div><div style="font-weight: bold; font-size: 0.9rem;">${it.name}</div><div style="color: var(--warning); font-size: 0.8rem;">${it.price} 🪙</div></div>`;
-            } else {
-                diceSelectedBetIndex = null;
-                box.innerHTML = `<span style="color: var(--text-secondary); font-size: 0.85rem;">Предмет не выбран</span>`;
-            }
-            playBtn.disabled = !(diceSelectedBetIndex !== null && diceSelectedColor !== null && inventory[diceSelectedBetIndex]);
-        }
-
-        function renderDiceHistory() {
-            const container = document.getElementById('dice-history-list');
-            if (!container) return;
-            document.getElementById('dice-total-spins-label').innerText = `Всего прокрутов: ${diceHistory.length}`;
-
-            if (diceHistory.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 10px;">История пуста. Сделайте первый бросок!</div>';
-                return;
-            }
-
-            let html = '';
-            diceHistory.slice(0, 15).forEach(h => {
-                const statusColor = h.win ? '#2ed573' : '#ff3838';
-                const statusText = h.win ? `Победа (${h.multiplier})` : 'Проигрыш';
-                html += `<div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--panel-border);">
-                    <div>👤 Ставка: <b>${h.itemName}</b> | Цвет: <span style="color: ${h.chosenColorHex};">■</span></div>
-                    <div style="color: ${statusColor}; font-weight: bold;">${statusText}</div>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function playColorDice() {
-            playSound('open');
-            if (diceSelectedBetIndex === null || diceSelectedColor === null || !inventory[diceSelectedBetIndex]) return;
-
-            const betItem = inventory[diceSelectedBetIndex];
-            const rewardItemTemplate = { name: betItem.name, price: betItem.price, icon: betItem.icon, locked: false };
-            const chosenColorObj = diceColors.find(c => c.name === diceSelectedColor);
-
-            inventory.splice(diceSelectedBetIndex, 1);
-            diceSelectedBetIndex = null;
-            saveUserData();
-            updateDiceControlUI();
-            renderInventory();
-
-            const isSecretX10 = Math.random() < 0.12;
-            let rolledColors = [];
-            for (let i = 0; i < 4; i++) rolledColors.push(diceColors[Math.floor(Math.random() * diceColors.length)]);
-
-            if (turboMode) {
-                finalizeDiceRoll(isSecretX10, rolledColors, rewardItemTemplate, chosenColorObj);
-                return;
-            }
-
-            const overlay = document.getElementById('dice-cinematic-overlay');
-            const statusText = document.getElementById('cinematic-status-text');
-            overlay.style.display = 'flex';
-
-            for (let i = 0; i < 4; i++) {
-                const dieEl = document.getElementById(`c-die-${i}`);
-                dieEl.classList.remove('show');
-                dieEl.classList.remove('dice-snow-effect');
-                dieEl.style.backgroundColor = '#2a1f18';
-            }
-
-            let step = 0;
-            const interval = setInterval(() => {
-                if (step < 4) {
-                    playSound('tick');
-                    const dieEl = document.getElementById(`c-die-${step}`);
-                    dieEl.classList.add('show');
-                    if (isSecretX10) dieEl.classList.add('dice-snow-effect');
-                    else dieEl.style.backgroundColor = rolledColors[step].hex;
-                    statusText.innerText = `Вылетел кубик ${step + 1} из 4...`;
-                    step++;
-                } else {
-                    clearInterval(interval);
-                    statusText.innerText = 'Подводим итоги броска...';
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        finalizeDiceRoll(isSecretX10, rolledColors, rewardItemTemplate, chosenColorObj);
-                    }, 800);
-                }
-            }, 1000);
-        }
-
-        function finalizeDiceRoll(isSecretX10, rolledColors, rewardItemTemplate, chosenColorObj) {
-            const msg = document.getElementById('dice-result-msg');
-            msg.innerText = "";
-
-            for (let i = 0; i < 4; i++) {
-                const dieEl = document.getElementById(`die-${i}`);
-                dieEl.classList.remove('dice-snow-effect');
-                if (isSecretX10) dieEl.classList.add('dice-snow-effect');
-                else dieEl.style.backgroundColor = rolledColors[i].hex;
-            }
-
-            let win = false;
-            let mult = "x0";
-
-            if (isSecretX10) {
-                win = true;
-                mult = "x10";
-                for (let k = 0; k < 10; k++) inventory.push({ ...rewardItemTemplate, id: 'item_' + Date.now() + '_' + Math.random() + k });
-                saveUserData();
-                renderInventory();
-                msg.className = "msg success";
-                msg.innerText = `❄️✨ СНЕЖНЫЙ ДЖЕКПОТ x10! Вы получили 10 предметов "${rewardItemTemplate.name}"!`;
-            } else {
-                let matchCount = rolledColors.filter(c => c.name === diceSelectedColor).length;
-                if (matchCount === 4) {
-                    win = true;
-                    mult = "x3";
-                    for (let k = 0; k < 3; k++) inventory.push({ ...rewardItemTemplate, id: 'item_' + Date.now() + '_' + Math.random() + k });
-                    saveUserData();
-                    renderInventory();
-                    msg.className = "msg success";
-                    msg.innerText = `⚡ СУПЕР-УСПЕХ x3! Получено 3 предмета!`;
-                } else if (matchCount >= 1) {
-                    win = true;
-                    mult = "x2";
-                    for (let k = 0; k < 2; k++) inventory.push({ ...rewardItemTemplate, id: 'item_' + Date.now() + '_' + Math.random() + k });
-                    saveUserData();
-                    renderInventory();
-                    msg.className = "msg success";
-                    msg.innerText = `🎯 УСПЕХ x2! Получено 2 предмета!`;
-                } else {
-                    msg.className = "msg error";
-                    msg.innerText = `❌ ПРОИГРЫШ. Ставка сгорела.`;
-                }
-            }
-
-            diceHistory.unshift({
-                itemName: rewardItemTemplate.name,
-                chosenColorHex: chosenColorObj ? chosenColorObj.hex : '#fff',
-                win: win,
-                multiplier: mult,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-            });
-            if (diceHistory.length > 50) diceHistory.pop();
-            saveUserData();
-            renderDiceHistory();
-        }
-
-        function renderRequestsTable() {
-            const container = document.getElementById('requests-container');
-            if (!container) return;
-            if (globalRequests.length === 0) {
-                container.innerHTML = '<div class="empty-text">Пока нет ни одной заявки</div>';
-                return;
-            }
-
-            let html = `<table class="requests-table">
-                <thead>
-                    <tr><th>Тип</th><th>Игрок / Ник</th><th>Время трейда</th><th>Предметы / Сумма</th><th>Статус / Действия</th></tr>
-                </thead><tbody>`;
-            
-            globalRequests.forEach(req => {
-                const typeBadge = req.type === 'deposit' ? '<span style="color: var(--warning); font-weight: bold;">💳 Пополнение</span>' : '<span style="color: var(--accent); font-weight: bold;">📥 Вывод</span>';
-                const extraInfo = req.type === 'deposit'
-                    ? `<br><b style="color:#2ed573;">К начислению: ${req.rewardCoins} 🪙</b>${req.refCode ? ` <small style="color:var(--text-secondary)">(Реф: ${req.refCode})</small>` : ''}`
-                    : '';
-
-                let statusBlock = req.status === 'approved'
-                    ? '<span style="color: #2ed573; font-weight: bold;">✓ Подтверждено</span>'
-                    : (req.status === 'rejected'
-                        ? '<span style="color: var(--danger); font-weight: bold;">✕ Отклонено</span>'
-                        : `<div style="display: flex; gap: 8px;">
-                            <button class="btn-sell" style="background: rgba(46, 213, 115, 0.2); border-color: #2ed573; color: #2ed573;" onclick="handleRequestAction('${req.id}', 'approve')">Подтвердить</button>
-                            <button class="btn-sell" onclick="handleRequestAction('${req.id}', 'reject')">Отклонить</button>
-                        </div>`);
-
-                html += `<tr>
-                    <td>${typeBadge}<br><small style="color:var(--text-secondary)">${req.time || ''}</small></td>
-                    <td><b>${req.user}</b><br><small style="color:var(--text-secondary)">Roblox: ${req.nick}</small></td>
-                    <td style="color: var(--warning);">${req.tradeTime}</td>
-                    <td>${req.item || (req.items || []).map(x => `${x.name} ×${x.qty || 1}`).join(', ')}${extraInfo}</td>
-                    <td>${statusBlock}</td>
-                </tr>`;
-            });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
-
-        function handleRequestAction(reqId, action) {
-            playSound('click');
-            const req = globalRequests.find(r => String(r.id) === String(reqId));
-            if (!req || req.status !== 'pending') return;
-
-            const cleanTargetUser = String(req.user || '').trim().toLowerCase().replace(/[.#$\[\]]/g, "_");
-            const targetKey = `akirabrain_data_${req.user}`;
-
-            // Читаем актуальные данные целевого игрока из всех возможных источников
-            let targetData = null;
-            if (remoteCloudData.users && remoteCloudData.users[cleanTargetUser]) {
-                targetData = remoteCloudData.users[cleanTargetUser];
-            } else {
-                const rawLocal = localStorage.getItem(targetKey);
-                if (rawLocal) targetData = JSON.parse(rawLocal);
-            }
-
-            if (action === 'approve') {
-                req.status = 'approved';
-
-                if (req.type === 'deposit') {
-                    let finalReward = Number(req.rewardCoins || 0);
-                    if (req.refCode) {
-                        finalReward = Math.round(finalReward * 1.05);
-                        const cleanRefUser = req.refCode.trim().toLowerCase().replace(/[.#$\[\]]/g, "_");
-                        const refBonusAmount = Math.max(1, Math.round(Number(req.rewardCoins || 0) * 0.05));
-
-                        if (remoteCloudData.users && remoteCloudData.users[cleanRefUser]) {
-                            remoteCloudData.users[cleanRefUser].refBalance = (remoteCloudData.users[cleanRefUser].refBalance || 0) + refBonusAmount;
-                            remoteCloudData.users[cleanRefUser].refCount = (remoteCloudData.users[cleanRefUser].refCount || 0) + 1;
-                        }
-                        const refKey = `akirabrain_data_${req.refCode.trim()}`;
-                        const refDataStr = localStorage.getItem(refKey);
-                        if (refDataStr) {
-                            let refData = JSON.parse(refDataStr);
-                            refData.refBalance = (refData.refBalance || 0) + refBonusAmount;
-                            refData.refCount = (refData.refCount || 0) + 1;
-                            localStorage.setItem(refKey, JSON.stringify(refData));
-                        }
-
-                        if (currentUser && currentUser.toLowerCase() === req.refCode.trim().toLowerCase()) {
-                            refBalance += refBonusAmount;
-                            refCount += 1;
-                            renderReferralTab();
-                        }
-                    }
-
-                    if (targetData) {
-                        targetData.balance = (Number(targetData.balance) || 0) + finalReward;
-                        if (!remoteCloudData.users) remoteCloudData.users = {};
-                        remoteCloudData.users[cleanTargetUser] = targetData;
-                        localStorage.setItem(targetKey, JSON.stringify(targetData));
-                    }
-
-                    if (currentUser && currentUser.toLowerCase() === String(req.user).toLowerCase()) {
-                        balance = (Number(balance) || 0) + finalReward;
-                        document.getElementById('balance').innerText = balance;
-                        saveUserData();
-                    }
-                    showToast(`Пополнение для ${req.user} (+${finalReward} 🪙) подтверждено!`, 'success');
-
-                } else if (req.type === 'withdraw') {
-                    const ids = req.inventoryItemIds || [];
-                    if (targetData && Array.isArray(targetData.inventory)) {
-                        targetData.inventory = targetData.inventory.filter(item => !ids.includes(item.id));
-                        if (!remoteCloudData.users) remoteCloudData.users = {};
-                        remoteCloudData.users[cleanTargetUser] = targetData;
-                        localStorage.setItem(targetKey, JSON.stringify(targetData));
-                    }
-
-                    if (currentUser && currentUser.toLowerCase() === String(req.user).toLowerCase()) {
-                        inventory = inventory.filter(item => !ids.includes(item.id));
-                        saveUserData();
-                        renderInventory();
-                        renderWithdrawPicker();
-                    }
-                    showToast(`Вывод для ${req.user} подтвержден! Предметы списаны.`, 'success');
-                }
-            } else if (action === 'reject') {
-                req.status = 'rejected';
-
-                if (req.type === 'withdraw') {
-                    const ids = req.inventoryItemIds || [];
-                    if (targetData && Array.isArray(targetData.inventory)) {
-                        targetData.inventory = targetData.inventory.map(item => ids.includes(item.id) ? { ...item, locked: false } : item);
-                        if (!remoteCloudData.users) remoteCloudData.users = {};
-                        remoteCloudData.users[cleanTargetUser] = targetData;
-                        localStorage.setItem(targetKey, JSON.stringify(targetData));
-                    }
-
-                    if (currentUser && currentUser.toLowerCase() === String(req.user).toLowerCase()) {
-                        inventory.forEach(item => { if (ids.includes(item.id)) item.locked = false; });
-                        saveUserData();
-                        renderInventory();
-                        renderWithdrawPicker();
-                    }
-                    showToast(`Вывод для ${req.user} отклонен. Предметы разблокированы.`, 'error');
-                } else {
-                    showToast(`Заявка на пополнение от ${req.user} отклонена.`, 'error');
-                }
-            }
-
-            saveCloudData();
-            renderRequestsTable();
+            selectedDepositItems = {};
+            selectedWithdrawIndices = [];
+            renderDepositCatalog();
+            renderWithdrawPicker();
             renderUserRequestsHistory();
         }
 
-        function clearAllRequests() {
-            playSound('click');
-            showConfirmModal("Очистить всю историю заявок?", () => {
-                globalRequests = [];
-                saveCloudData();
-                renderRequestsTable();
-                renderUserRequestsHistory();
-                showToast("История заявок очищена.", 'success');
+        function renderDepositCatalog() {
+            const container = document.getElementById('deposit-catalog');
+            if (!container) return;
+            const catalog = getAllUniqueBrainrots().filter(it => it.price >= 50);
+            if (catalog.length === 0) {
+                container.innerHTML = '<div class="empty-text">Нет предметов от 50 коинов</div>';
+                return;
+            }
+            let html = '';
+            catalog.forEach(it => {
+                const qty = selectedDepositItems[it.name] || 0;
+                const depositPrice = Math.max(1, Math.round(it.price * 0.85));
+                html += `<div class="select-card ${qty > 0 ? 'selected' : ''}">
+                    <img src="${it.icon}">
+                    <b style="font-size:0.75rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${it.name}">${it.name}</b>
+                    <small style="color:var(--warning);">${depositPrice} 🪙</small>
+                    <div class="qty-controls">
+                        <button type="button" onclick="changeDepositQty('${encodeURIComponent(it.name)}', -1)">-</button>
+                        <span>${qty}</span>
+                        <button type="button" onclick="changeDepositQty('${encodeURIComponent(it.name)}', 1)">+</button>
+                    </div>
+                </div>`;
             });
+            container.innerHTML = html;
+            updateDepositSummary();
         }
 
-        function adminGiveUserBalance() {
-            const nick = document.getElementById('admin-give-nick').value.trim();
-            const amount = Number(document.getElementById('admin-give-amount').value);
-            const msg = document.getElementById('admin-give-msg');
+        function changeDepositQty(encodedName, delta) {
+            playSound('click');
+            const name = decodeURIComponent(encodedName);
+            const totalSelected = Object.values(selectedDepositItems).reduce((a, b) => a + b, 0);
+            const current = selectedDepositItems[name] || 0;
+            if (delta > 0 && totalSelected >= 10) {
+                showToast('Максимум 10 предметов в одной заявке!', 'error');
+                return;
+            }
+            const next = Math.max(0, current + delta);
+            if (next === 0) delete selectedDepositItems[name];
+            else selectedDepositItems[name] = next;
+            renderDepositCatalog();
+        }
 
-            if (!nick || !Number.isFinite(amount) || amount === 0) {
+        function updateDepositSummary() {
+            const summary = document.getElementById('deposit-selected-summary');
+            if (!summary) return;
+            const catalog = getAllUniqueBrainrots();
+            let totalQty = 0;
+            let totalCoins = 0;
+            Object.entries(selectedDepositItems).forEach(([name, qty]) => {
+                const found = catalog.find(x => x.name === name);
+                if (found) {
+                    totalQty += qty;
+                    totalCoins += Math.max(1, Math.round(found.price * 0.85)) * qty;
+                }
+            });
+            summary.innerText = `Выбрано: ${totalQty}/10 · Начислится: ${totalCoins} 🪙`;
+        }
+
+        function sendDepositRequest() {
+            playSound('click');
+            if (!currentUser) { openAuthModal(); return; }
+            const nick = document.getElementById('deposit-roblox-nick').value.trim();
+            const refCode = document.getElementById('deposit-ref-code').value.trim();
+            const tradeTime = document.getElementById('deposit-time-input').value.trim();
+            const msg = document.getElementById('deposit-msg');
+
+            const entries = Object.entries(selectedDepositItems);
+            if (entries.length === 0) {
                 msg.className = 'msg error';
-                msg.innerText = 'Укажи ник игрока и сумму коинов.';
+                msg.innerText = 'Выберите хотя бы один предмет от 50 коинов!';
+                return;
+            }
+            if (!nick || !tradeTime) {
+                msg.className = 'msg error';
+                msg.innerText = 'Укажите ваш Roblox ник и удобное время!';
+                return;
+            }
+            if (refCode && refCode.toLowerCase() === currentUser.toLowerCase()) {
+                msg.className = 'msg error';
+                msg.innerText = 'Нельзя указать собственный реферальный код!';
                 return;
             }
 
-            const cleanTarget = nick.toLowerCase().replace(/[.#$\[\]]/g, "_");
-            const targetKey = `akirabrain_data_${nick}`;
-            let targetData = (remoteCloudData.users && remoteCloudData.users[cleanTarget]) || null;
+            const catalog = getAllUniqueBrainrots();
+            let itemsList = [];
+            let rewardCoins = 0;
+            entries.forEach(([name, qty]) => {
+                const found = catalog.find(x => x.name === name);
+                if (found) {
+                    itemsList.push({ name, qty });
+                    rewardCoins += Math.max(1, Math.round(found.price * 0.85)) * qty;
+                }
+            });
 
-            if (!targetData) {
-                const rawLocal = localStorage.getItem(targetKey);
-                if (rawLocal) targetData = JSON.parse(rawLocal);
-            }
+            globalRequests.unshift({
+                id: 'req_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                type: 'deposit',
+                user: currentUser,
+                nick,
+                refCode,
+                tradeTime,
+                items: itemsList,
+                rewardCoins,
+                status: 'pending',
+                time: new Date().toLocaleString()
+            });
 
-            if (!targetData && currentUser && currentUser.toLowerCase() !== nick.toLowerCase()) {
-                msg.className = 'msg error';
-                msg.innerText = 'Игрок с таким ником не найден.';
-                return;
-            }
-
-            if (targetData) {
-                targetData.balance = Math.max(0, (Number(targetData.balance) || 0) + amount);
-                if (!remoteCloudData.users) remoteCloudData.users = {};
-                remoteCloudData.users[cleanTarget] = targetData;
-                localStorage.setItem(targetKey, JSON.stringify(targetData));
-            }
-
-            if (currentUser && currentUser.toLowerCase() === nick.toLowerCase()) {
-                balance = Math.max(0, balance + amount);
-                document.getElementById('balance').innerText = balance;
-                saveUserData();
-            } else {
-                saveCloudData();
-            }
+            selectedDepositItems = {};
+            renderDepositCatalog();
+            saveCloudData();
+            renderUserRequestsHistory();
 
             msg.className = 'msg success';
-            msg.innerText = `Баланс игрока ${nick} изменён на ${amount > 0 ? '+' + amount : amount} 🪙!`;
-            showToast(`Баланс ${nick} обновлён!`, 'success');
+            msg.innerText = 'Заявка на пополнение отправлена администратору!';
+            showToast('Заявка на пополнение отправлена!', 'success');
         }
 
-        function initAdminContentPanel() {
-            const sel=document.getElementById('admin-theme-select');if(sel)sel.value=activeSiteTheme;
-            renderAdminCaseManager();renderAdminGlobalItems();renderAdminPromoList();renderAdminCaseItemChoices();loadFuseSettingsIntoAdmin();
-        }
-        function saveSiteContent(){remoteCloudData.siteContent={cases:defaultCasesData,items:itemsData,theme:activeSiteTheme};saveCloudData();localStorage.setItem('akirabrain_custom_cases',JSON.stringify(defaultCasesData));localStorage.setItem('akirabrain_custom_items',JSON.stringify(itemsData));}
-        function adminApplyTheme(){const t=document.getElementById('admin-theme-select').value;applySiteTheme(t,true);const m=document.getElementById('admin-theme-msg');m.className='msg success';m.innerText='Тема применена и сохранена.';}
-        function applySiteTheme(theme,persist=true){
-            activeSiteTheme=['red','halloween','winter'].includes(theme)?theme:'red';
-            document.body.classList.remove('theme-red','theme-halloween','theme-winter');document.body.classList.add('theme-'+activeSiteTheme);
-            const labels={red:['🔴','[Red Dark]'],halloween:['🎃','[Halloween Edition]'],winter:['❄️','[Winter Edition]']};
-            const icon=document.getElementById('site-season-icon'),label=document.getElementById('site-edition-label');
-            if(icon)icon.textContent=labels[activeSiteTheme][0];if(label)label.textContent=labels[activeSiteTheme][1];
-            const snow=document.getElementById('theme-snow');if(snow){snow.innerHTML='';if(activeSiteTheme==='winter'){for(let i=0;i<75;i++){const f=document.createElement('span');f.className='snowflake';f.textContent=Math.random()>.65?'❄':'·';f.style.left=Math.random()*100+'%';f.style.fontSize=(9+Math.random()*17)+'px';f.style.animationDuration=(9+Math.random()*18)+'s';f.style.animationDelay=(-Math.random()*22)+'s';f.style.opacity=(.35+Math.random()*.55).toFixed(2);snow.appendChild(f);}}}
-            localStorage.setItem('akirabrain_theme',activeSiteTheme);if(persist&&typeof saveCloudData==='function')saveCloudData();
-        }
-        function getFuseSettings(){const cfg=remoteCloudData.fuseSettings||{};return {title:(!cfg.title||cfg.title==='Brainrot Fuse')?'Winter Fuse':cfg.title,image:cfg.image||'https://files.catbox.moe/hf9r73.jpg'};}
-        function applyFuseSettings(){const cfg=getFuseSettings();const title=document.getElementById('fuse-title'),img=document.getElementById('fuse-banner-image');if(title)title.textContent='❄️ '+(cfg.title||'Winter Fuse');if(img&&cfg.image)img.src=cfg.image;const btn=document.getElementById('fuse-action-btn');if(btn)btn.textContent='Запустить '+(cfg.title||'Winter Fuse');}
-        function loadFuseSettingsIntoAdmin(){const cfg=getFuseSettings();const t=document.getElementById('admin-fuse-title'),i=document.getElementById('admin-fuse-image');if(t)t.value=cfg.title||'Winter Fuse';if(i)i.value=cfg.image||'';applyFuseSettings();}
-        function adminSaveFuseSettings(){const title=document.getElementById('admin-fuse-title').value.trim(),image=document.getElementById('admin-fuse-image').value.trim(),msg=document.getElementById('admin-fuse-msg');if(!title||!/^https:\/\//i.test(image)){msg.className='msg error';msg.textContent='Введи название и корректную HTTPS-ссылку на картинку.';return;}remoteCloudData.fuseSettings={title,image};applyFuseSettings();saveCloudData();msg.className='msg success';msg.textContent='Оформление Fuse сохранено.';}
-        function getAdminCatalog(){return getAllUniqueBrainrots();}
-        function renderAdminCaseItemChoices(){const el=document.getElementById('admin-case-item-choices');if(!el)return;const q=(document.getElementById('admin-case-item-search')?.value||'').toLowerCase();el.innerHTML=getAdminCatalog().filter(it=>it.name.toLowerCase().includes(q)).map(it=>`<div class="select-card ${adminSelectedCaseItems.has(it.name)?'selected':''}" onclick="toggleAdminCaseItem('${encodeURIComponent(it.name)}')"><img src="${it.icon}"><b style="font-size:.72rem">${it.name}</b><small>${it.price} 🪙</small></div>`).join('');}
-        function toggleAdminCaseItem(encoded){const n=decodeURIComponent(encoded);if(adminSelectedCaseItems.has(n))adminSelectedCaseItems.delete(n);else adminSelectedCaseItems.add(n);renderAdminCaseItemChoices();}
-        function adminAddNewBrainrot(){const name=document.getElementById('admin-item-name').value.trim();const price=Number(document.getElementById('admin-item-price').value);const icon=document.getElementById('admin-item-icon').value.trim();const msg=document.getElementById('admin-item-msg');if(!name||!Number.isFinite(price)||price<=0||!/^https?:\/\//i.test(icon)){msg.className='msg error';msg.innerText='Проверь название, цену и ссылку на изображение.';return;}if(getAdminCatalog().some(x=>x.name.toLowerCase()===name.toLowerCase())){msg.className='msg error';msg.innerText='Такой брейнрот уже есть в каталоге.';return;}itemsData.catalog=itemsData.catalog||[];itemsData.catalog.push({name,price,icon});saveSiteContent();renderAdminGlobalItems();renderAdminCaseItemChoices();msg.className='msg success';msg.innerText='Брейнрот добавлен в общий каталог.';}
-        function adminAddNewCase(){const key=document.getElementById('admin-case-key').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'_');const title=document.getElementById('admin-case-title').value.trim();const price=Number(document.getElementById('admin-case-price').value);const img=document.getElementById('admin-case-img').value.trim();const category=document.getElementById('admin-case-category').value;const msg=document.getElementById('admin-case-msg');if(!key||!title||!Number.isFinite(price)||price<0||!/^https?:\/\//i.test(img)||defaultCasesData[key]){msg.className='msg error';msg.innerText='Заполни поля корректно. Ключ должен быть уникальным, картинка — ссылкой.';return;}const selected=getAdminCatalog().filter(it=>adminSelectedCaseItems.has(it.name)).map(it=>({...it,chance:100}));if(!selected.length){msg.className='msg error';msg.innerText='Выбери хотя бы одного брейнрота для кейса.';return;}defaultCasesData[key]={title,price,img,category};itemsData[key]=selected;adminSelectedCaseItems.clear();saveSiteContent();buildRandomCasePool();renderCasesGrid();initAdminContentPanel();msg.className='msg success';msg.innerText='Кейс создан с выбранными предметами.';}
-        function renderAdminCaseManager(){const el=document.getElementById('admin-case-manager');if(!el)return;el.innerHTML=Object.entries(defaultCasesData).map(([key,c])=>`<div class="profile-card" style="padding:12px;margin-bottom:8px"><div class="admin-row"><img src="${c.img}"><div class="admin-row-main"><b>${c.title}</b><small>${key} · ${c.price} 🪙 · ${(itemsData[key]||[]).length} предметов</small></div><button onclick="adminDeleteCase('${key}')">Удалить кейс</button></div><div class="admin-list">${(itemsData[key]||[]).map((it,i)=>`<div class="admin-row"><img src="${it.icon}"><div class="admin-row-main"><b>${it.name}</b><small>${it.price} 🪙 · вес шанса ${Number(it.chance??it.customWeight??1)}</small></div><label style="font-size:.75rem">Вес (1–100) <input type="number" min="1" max="100" value="${Math.max(1,Math.min(100,Number(it.chance??it.customWeight??1)))}" onchange="adminSetItemChance('${key}',${i},this.value)"></label><button onclick="adminRemoveItemFromCase('${key}',${i})">Убрать</button></div>`).join('')}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><select id="add-to-${key}" class="promo-input" style="flex:1;min-width:180px;margin-bottom:0">${getAdminCatalog().map(it=>`<option value="${encodeURIComponent(it.name)}">${it.name}</option>`).join('')}</select><button class="mini-btn" onclick="adminAddCatalogItemToCase('${key}')">Добавить предмет</button></div></div>`).join('');}
-        function adminDeleteCase(key){if(['free'].includes(key)){showToast('Бесплатный базовый кейс нельзя удалить.', 'error');return;}showConfirmModal('Удалить кейс '+(defaultCasesData[key]?.title||key)+'?', () => {delete defaultCasesData[key];delete itemsData[key];saveSiteContent();renderCasesGrid();renderAdminCaseManager();});}
-        function adminSetItemChance(key,index,value){const n=Math.max(1,Math.min(100,Number(value)||1));if(itemsData[key]?.[index]){itemsData[key][index].chance=n;saveSiteContent();renderAdminCaseManager();}}
-        function adminRemoveItemFromCase(key,index){if(!itemsData[key])return;if(itemsData[key].length<=1){showToast('В кейсе должен остаться хотя бы один предмет.', 'error');return;}itemsData[key].splice(index,1);saveSiteContent();renderAdminCaseManager();}
-        function adminAddCatalogItemToCase(key){const el=document.getElementById('add-to-'+key);const item=getAdminCatalog().find(x=>x.name===decodeURIComponent(el.value));if(!item)return;itemsData[key]=itemsData[key]||[];if(itemsData[key].some(x=>x.name===item.name)){showToast('Этот предмет уже есть в кейсе.', 'error');return;}itemsData[key].push({...item,chance:100});saveSiteContent();renderAdminCaseManager();}
-        function renderAdminGlobalItems(){const el=document.getElementById('admin-global-items');if(!el)return;const q=(document.getElementById('admin-global-search')?.value||'').toLowerCase();el.innerHTML=getAdminCatalog().filter(it=>it.name.toLowerCase().includes(q)).map(it=>`<div class="admin-row"><img src="${it.icon}"><div class="admin-row-main"><b>${it.name}</b><small>${it.price} 🪙</small></div><button onclick="adminDeleteCatalogItem('${encodeURIComponent(it.name)}')">Удалить</button></div>`).join('')||'<div class="empty-text">Ничего не найдено</div>';}
-        function adminDeleteCatalogItem(encoded){const name=decodeURIComponent(encoded);showConfirmModal('Удалить '+name+' из всех кейсов и общего каталога?', () => {Object.keys(itemsData).forEach(k=>itemsData[k]=itemsData[k].filter(it=>it.name!==name));saveSiteContent();renderAdminGlobalItems();renderAdminCaseManager();renderAdminCaseItemChoices();});}
-        function adminAddNewPromo(){const code=document.getElementById('admin-promo-code').value.trim().toUpperCase();const reward=Number(document.getElementById('admin-promo-reward').value);const limit=Number(document.getElementById('admin-promo-limit').value);const msg=document.getElementById('admin-promo-msg');if(!code||!Number.isFinite(reward)||reward<=0||!Number.isInteger(limit)||limit<1){msg.className='msg error';msg.innerText='Заполни код, награду и лимит корректно.';return;}promoCodes[code]={reward,maxUses:limit,uses:0};saveCloudData();renderAdminPromoList();msg.className='msg success';msg.innerText='Промокод создан и сохранён.';}
-        function renderAdminPromoList(){const el=document.getElementById('admin-promo-list');if(!el)return;el.innerHTML=Object.entries(promoCodes).map(([code,p])=>`<div class="admin-row"><div class="admin-row-main"><b>${code}</b><small>${p.reward} 🪙 · использовано ${p.uses||0}/${p.maxUses||'∞'}</small></div><button onclick="adminDeletePromo('${code}')">Удалить</button></div>`).join('');}
-        function adminDeletePromo(code){showConfirmModal('Удалить промокод '+code+'?', () => {delete promoCodes[code];if(!remoteCloudData.deletedPromos)remoteCloudData.deletedPromos=[];if(!remoteCloudData.deletedPromos.includes(code))remoteCloudData.deletedPromos.push(code);saveCloudData();renderAdminPromoList();});}
-
-        let upgraderCurrentPointerAngle = 0;
-
-        function initUpgraderTab() {
-            renderUpgraderPicker();
-            updateUpgraderSlotsUI();
-        }
-
-        function openUpgraderSelector(mode) {
-            playSound('click');
-            if(mode === 'source') {
-                document.getElementById('upgrader-picker-title').innerText = '🎒 Выберите ставку';
-                renderUpgraderPicker();
-            } else {
-                document.getElementById('upgrader-picker-title').innerText = '🎁 Выберите приз';
-                renderTargetPoolPicker();
+        function renderWithdrawPicker() {
+            const container = document.getElementById('withdraw-inventory-picker');
+            if (!container) return;
+            const eligible = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked && Number(it.price) >= 50);
+            if (eligible.length === 0) {
+                container.innerHTML = '<div class="empty-text">Нет предметов от 50 коинов в инвентаре</div>';
+                updateWithdrawSummary();
+                return;
             }
-        }
-
-        function setTargetChance(chance) {
-            playSound('click');
-            if(chance > 80) chance = 80;
-            selectedDesiredChance = chance;
-            document.querySelectorAll('.chance-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if(btn.textContent.includes(chance + '%')) btn.classList.add('active');
-            });
-            if (upgraderSourceIndex !== null) autoSelectTargetByChance(chance);
-            else updateUpgraderSlotsUI();
-        }
-
-        function renderUpgraderPicker() {
-            const grid = document.getElementById('upgrader-inventory-grid');
-            const usableItems = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
-
-            if(usableItems.length === 0) { grid.innerHTML = '<div class="empty-text">Нет доступных предметов</div>'; upgraderSourceIndex = null; updateUpgraderSlotsUI(); return; }
-
             let html = '';
-            inventory.forEach((item, index) => {
-                if (item.locked) return;
-                const isSelected = (upgraderSourceIndex === index) ? 'selected' : '';
-                html += `<div class="inv-card ${isSelected}" onclick="pickSourceItem(${index})"><div><img src="${item.icon}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px; margin: 0 auto 4px;"><div class="inv-item-name">${item.name}</div><div class="inv-item-price">${item.price} 🪙</div></div></div>`;
+            eligible.forEach(it => {
+                const isSel = selectedWithdrawIndices.includes(it.originalIndex) ? 'selected' : '';
+                html += `<div class="select-card ${isSel}" onclick="toggleWithdrawItem(${it.originalIndex})">
+                    <img src="${it.icon}">
+                    <b style="font-size:0.75rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${it.name}">${it.name}</b>
+                    <small style="color:var(--warning);">${it.price} 🪙</small>
+                </div>`;
             });
-            grid.innerHTML = html;
+            container.innerHTML = html;
+            updateWithdrawSummary();
         }
 
-        function renderTargetPoolPicker() {
-            const grid = document.getElementById('upgrader-inventory-grid');
-            let allPools = [];
-            Object.values(itemsData).forEach(pool => pool.forEach(it => { if(!allPools.some(x => x.name === it.name)) allPools.push(it); }));
-            allPools.sort((a, b) => a.price - b.price);
+        function toggleWithdrawItem(index) {
+            playSound('click');
+            const pos = selectedWithdrawIndices.indexOf(index);
+            if (pos > -1) selectedWithdrawIndices.splice(pos, 1);
+            else {
+                if (selectedWithdrawIndices.length >= 10) {
+                    showToast('Максимум 10 предметов за один вывод!', 'error');
+                    return;
+                }
+                selectedWithdrawIndices.push(index);
+            }
+            renderWithdrawPicker();
+        }
 
-            let html = '';
-            allPools.forEach((item) => {
-                const isSelected = (upgraderTargetItem && upgraderTargetItem.name === item.name) ? 'selected' : '';
-                html += `<div class="inv-card ${isSelected}" onclick="pickTargetItem('${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.icon}')"><div><img src="${item.icon}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px; margin: 0 auto 4px;"><div class="inv-item-name">${item.name}</div><div class="inv-item-price">${item.price} 🪙</div></div></div>`;
+        function updateWithdrawSummary() {
+            const info = document.getElementById('selected-withdraw-item-info');
+            if (info) info.innerText = `Выбрано: ${selectedWithdrawIndices.length}/10`;
+        }
+
+        function sendWithdrawRequest() {
+            playSound('click');
+            if (!currentUser) { openAuthModal(); return; }
+            const nick = document.getElementById('withdraw-roblox-nick').value.trim();
+            const tradeTime = document.getElementById('withdraw-time-input').value.trim();
+            const msg = document.getElementById('withdraw-msg');
+
+            if (selectedWithdrawIndices.length === 0) {
+                msg.className = 'msg error';
+                msg.innerText = 'Выберите предметы из инвентаря (от 50 коинов)!';
+                return;
+            }
+            if (!nick || !tradeTime) {
+                msg.className = 'msg error';
+                msg.innerText = 'Укажите Roblox ник и удобное время для трейда!';
+                return;
+            }
+
+            const chosenItems = [];
+            const chosenIds = [];
+            selectedWithdrawIndices.forEach(idx => {
+                const it = inventory[idx];
+                if (it && !it.locked) {
+                    it.locked = true;
+                    chosenItems.push({ name: it.name, qty: 1 });
+                    chosenIds.push(it.id);
+                }
             });
-            grid.innerHTML = html;
-        }
 
-        function pickSourceItem(index) {
-            playSound('click');
-            upgraderSourceIndex = index;
-            renderUpgraderPicker();
-            autoSelectTargetByChance(selectedDesiredChance);
-        }
+            globalRequests.unshift({
+                id: 'req_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                type: 'withdraw',
+                user: currentUser,
+                nick,
+                tradeTime,
+                items: chosenItems,
+                inventoryItemIds: chosenIds,
+                status: 'pending',
+                time: new Date().toLocaleString()
+            });
 
-        function pickTargetItem(name, price, icon) {
-            playSound('click');
-            upgraderTargetItem = { name, price, icon };
-            renderTargetPoolPicker();
-            updateUpgraderSlotsUI();
-        }
-
-        function autoSelectTargetByChance(chance) {
-            if (upgraderSourceIndex === null || !inventory[upgraderSourceIndex]) return;
-            const sourcePrice = inventory[upgraderSourceIndex].price;
-            let idealTargetPrice = sourcePrice / (chance / 100);
-
-            let allPools = [];
-            Object.values(itemsData).forEach(pool => pool.forEach(it => { if(!allPools.some(x => x.name === it.name)) allPools.push(it); }));
-            allPools.sort((a, b) => Math.abs(a.price - idealTargetPrice) - Math.abs(b.price - idealTargetPrice));
-
-            let validItems = allPools.filter(i => i.price >= sourcePrice);
-            upgraderTargetItem = validItems.length > 0 ? validItems[0] : allPools[0];
-            updateUpgraderSlotsUI();
-        }
-
-        function drawStaticUpgraderWheel(winChance) {
-            const canvas = document.getElementById('upgrader-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width, h = canvas.height;
-            const cx = w / 2, cy = h / 2, radius = w / 2 - 5;
-
-            ctx.clearRect(0, 0, w, h);
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = '#ff3838';
-            ctx.fill();
-
-            const winAngleSpan = (winChance / 100) * (2 * Math.PI);
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            const startAngle = -Math.PI / 2 - (winAngleSpan / 2);
-            const endAngle = startAngle + winAngleSpan;
-            ctx.arc(cx, cy, radius, startAngle, endAngle, false);
-            ctx.lineTo(cx, cy);
-            ctx.fillStyle = '#2ed573';
-            ctx.fill();
-
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#2b170e';
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-            ctx.stroke();
-        }
-
-        function updateUpgraderSlotsUI() {
-            const sourceSlot = document.getElementById('upgrader-source-slot');
-            const targetSlot = document.getElementById('upgrader-target-slot');
-            const actionBtn = document.getElementById('upgrade-action-btn');
-            const centerIcon = document.getElementById('wheel-center-icon');
-            const centerImg = document.getElementById('wheel-center-img');
-            const centerText = document.getElementById('wheel-center-text');
-
-            let sourcePrice = 0, targetPrice = 0, currentChance = 50, multiplier = 1.00;
-
-            if(upgraderSourceIndex !== null && inventory[upgraderSourceIndex]) {
-                const src = inventory[upgraderSourceIndex];
-                sourceSlot.className = "upgrader-slot filled";
-                sourceSlot.innerHTML = `<img src="${src.icon}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-bottom: 6px;"><div style="font-weight: bold; font-size: 0.9rem;">${src.name}</div><div style="color: var(--warning); font-size: 0.85rem; margin-top:2px;">${src.price} 🪙</div>`;
-                sourcePrice = src.price;
-                centerIcon.style.display = 'none';
-                centerImg.style.display = 'block';
-                centerImg.src = src.icon;
-            } else {
-                sourceSlot.className = "upgrader-slot";
-                sourceSlot.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать ставку</span>';
-                centerIcon.style.display = 'block';
-                centerImg.style.display = 'none';
-            }
-
-            if(upgraderTargetItem) {
-                targetSlot.className = "upgrader-slot filled";
-                targetSlot.innerHTML = `<img src="${upgraderTargetItem.icon}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-bottom: 6px;"><div style="font-weight: bold; font-size: 0.9rem;">${upgraderTargetItem.name}</div><div style="color: var(--warning); font-size: 0.85rem; margin-top:2px;">${upgraderTargetItem.price} 🪙</div>`;
-                targetPrice = upgraderTargetItem.price;
-            } else {
-                targetSlot.className = "upgrader-slot";
-                targetSlot.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать приз</span>';
-            }
-
-            if(sourcePrice > 0 && targetPrice > 0) {
-                currentChance = sourcePrice >= targetPrice ? 80 : (sourcePrice / targetPrice) * 100;
-                if(currentChance > 80) currentChance = 80;
-                multiplier = (targetPrice / sourcePrice).toFixed(2);
-            } else {
-                currentChance = selectedDesiredChance;
-            }
-
-            document.getElementById('upgrade-multiplier-text').innerText = multiplier + 'x';
-            document.getElementById('upgrade-chance-text').innerText = currentChance.toFixed(1) + '%';
-            centerText.innerText = currentChance.toFixed(1) + '%';
-
-            drawStaticUpgraderWheel(currentChance);
-            actionBtn.disabled = !(upgraderSourceIndex !== null && upgraderTargetItem);
-        }
-
-        function startUpgrade() {
-            playSound('open');
-            if(upgraderSourceIndex === null || !inventory[upgraderSourceIndex] || !upgraderTargetItem) return;
-
-            const sourceItem = inventory[upgraderSourceIndex];
-            const targetPrize = upgraderTargetItem;
-            let winChance = sourceItem.price >= targetPrize.price ? 80 : (sourceItem.price / targetPrize.price) * 100;
-            if(winChance > 80) winChance = 80;
-
-            winChance = Math.min(80, winChance * 1.15);
-
-            document.getElementById('upgrade-action-btn').disabled = true;
-            inventory.splice(upgraderSourceIndex, 1);
-            upgraderSourceIndex = null;
+            selectedWithdrawIndices = [];
             saveUserData();
+            renderInventory();
+            renderWithdrawPicker();
+            renderUserRequestsHistory();
 
-            const isSuccess = Math.random() * 100 <= winChance;
-            
-            const winAngleSpan = (winChance / 100) * 360;
-            let targetStopAngle;
-            if (isSuccess) {
-                targetStopAngle = (Math.random() * (winAngleSpan - 10) - (winAngleSpan / 2) + 5);
-            } else {
-                const minRedOffset = winAngleSpan / 2 + 5;
-                const maxRedOffset = 360 - 5;
-                targetStopAngle = minRedOffset + Math.random() * (maxRedOffset - minRedOffset);
-                if (Math.random() < 0.5) targetStopAngle = -targetStopAngle;
-            }
-            
-            const targetTotalRotation = upgraderCurrentPointerAngle + 360 * 6 + targetStopAngle;
-            let startTime = null, startAngle = upgraderCurrentPointerAngle, lastTickAngle = startAngle;
-            const pointerEl = document.getElementById('rotating-pointer');
-
-            function animatePointerSpin(timestamp) {
-                if (!startTime) startTime = timestamp;
-                let progress = (timestamp - startTime) / (turboMode ? 2000 : 5200);
-                if (progress > 1) progress = 1;
-
-                upgraderCurrentPointerAngle = startAngle + (targetTotalRotation - startAngle) * (1 - Math.pow(1 - progress, 3));
-                if (pointerEl) pointerEl.style.transform = `rotate(${upgraderCurrentPointerAngle}deg)`;
-
-                if (Math.abs(upgraderCurrentPointerAngle - lastTickAngle) > 25) {
-                    playSound('upgrade-tick');
-                    lastTickAngle = upgraderCurrentPointerAngle;
-                }
-
-                if (progress < 1) {
-                    requestAnimationFrame(animatePointerSpin);
-                } else {
-                    playSound('open');
-                    
-                    const normalizedAngle = ((upgraderCurrentPointerAngle % 360) + 360) % 360;
-                    let diffFromTop = normalizedAngle > 180 ? normalizedAngle - 360 : normalizedAngle;
-                    
-                    const halfSpan = winAngleSpan / 2;
-                    const finalSuccessCheck = Math.abs(diffFromTop) <= halfSpan;
-
-                    const modalText = document.getElementById('upgrade-modal-result-text');
-                    if(finalSuccessCheck) {
-                        const wonNewItem = { name: targetPrize.name, price: targetPrize.price, icon: targetPrize.icon, id: 'item_' + Date.now() + '_' + Math.random(), locked: false };
-                        inventory.push(wonNewItem);
-                        const activePlayerName = currentUser || "Игрок";
-                        pushLiveDrop(activePlayerName, wonNewItem);
-                        checkAndUpdateBestDrop(activePlayerName, wonNewItem);
-
-                        modalText.innerHTML = `<span style="color: var(--accent);">УСПЕХ! Вы выиграли:</span><br><br><img src="${targetPrize.icon}" style="width:75px;height:75px;object-fit:cover;border-radius:12px;"><br><div style="color: var(--warning);">${targetPrize.name} (${targetPrize.price} 🪙)</div>`;
-                    } else {
-                        modalText.innerHTML = `<span style="color: var(--danger);">НЕУДАЧА! Ставка сгорела.</span>`;
-                    }
-                    saveUserData();
-                    updateUpgraderSlotsUI();
-                    document.getElementById('upgrade-result-modal').style.display = 'flex';
-                }
-            }
-            requestAnimationFrame(animatePointerSpin);
+            msg.className = 'msg success';
+            msg.innerText = 'Заявка на вывод создана! Предметы временно заблокированы.';
+            showToast('Заявка на вывод отправлена!', 'success');
         }
 
-        function closeUpgradeResultModal() {
+        function renderUserRequestsHistory() {
+            const container = document.getElementById('user-requests-history');
+            if (!container || !currentUser) return;
+            const myReqs = globalRequests.filter(r => r.user && r.user.toLowerCase() === currentUser.toLowerCase());
+            if (myReqs.length === 0) {
+                container.innerHTML = '<div class="empty-text" style="padding: 15px;">У вас пока нет заявок</div>';
+                return;
+            }
+            let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+            myReqs.slice(0, 15).forEach(r => {
+                const typeLabel = r.type === 'deposit' ? '💳 Пополнение' : '📤 Вывод';
+                const statusLabel = r.status === 'approved'
+                    ? '<span style="color:#2ed573;font-weight:bold;">✓ Подтверждено</span>'
+                    : (r.status === 'rejected'
+                        ? '<span style="color:var(--danger);font-weight:bold;">✕ Отклонено</span>'
+                        : '<span style="color:var(--warning);font-weight:bold;">⏳ В ожидании</span>');
+                const itemsText = r.item || (r.items || []).map(x => `${x.name} ×${x.qty || 1}`).join(', ');
+                html += `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.3);border:1px solid var(--panel-border);padding:10px 14px;border-radius:10px;font-size:0.88rem;flex-wrap:wrap;gap:8px;">
+                    <div><b>${typeLabel}</b> · ${itemsText} <small style="color:var(--text-secondary);">(${r.tradeTime})</small></div>
+                    <div>${statusLabel}</div>
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderReferralTab() {
+            if (!currentUser) return;
+            document.getElementById('ref-code-display').innerText = currentUser;
+            document.getElementById('ref-count-display').innerText = refCount;
+            document.getElementById('ref-balance-display').innerText = refBalance + ' 🪙';
+        }
+
+        function claimReferralBalance() {
             playSound('click');
-            document.getElementById('upgrade-result-modal').style.display = 'none';
-            initUpgraderTab();
+            const msg = document.getElementById('ref-msg');
+            if (refBalance <= 0) {
+                msg.className = 'msg error';
+                msg.innerText = 'На реферальном балансе пока нет коинов!';
+                return;
+            }
+            const amount = refBalance;
+            refBalance = 0;
+            saveUserData();
+            renderReferralTab();
+            updateBalance(amount, (success) => {
+                if (success) {
+                    msg.className = 'msg success';
+                    msg.innerText = `Собрано ${amount} 🪙 на основной баланс!`;
+                    showToast(`Получено ${amount} 🪙 с реферального баланса!`, 'success');
+                }
+            });
         }
 
         function activatePromo() {
@@ -4020,6 +3366,1072 @@
                 </div>`;
             });
             container.innerHTML = html;
+        }
+
+        // --- Отрисовка и открытие кейсов ---
+        function filterCases(category, event) {
+            playSound('click');
+            currentCaseFilter = category;
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+            renderCasesGrid();
+        }
+
+        function renderCasesGrid() {
+            const container = document.getElementById('cases-grid-container');
+            if (!container) return;
+            let html = '';
+            let count = 0;
+
+            for (let key in defaultCasesData) {
+                const c = defaultCasesData[key];
+                const cat = c.category || 'regular';
+                if (currentCaseFilter !== 'all' && cat !== currentCaseFilter) continue;
+
+                count++;
+                const priceText = c.price === 0 ? 'Бесплатно' : `${c.price} Braincoins`;
+                const borderColor = c.isAccent ? 'style="border-color: var(--accent);"' : '';
+                const titleColor = c.isAccent ? 'style="color: var(--accent);"' : '';
+                const btnStyle = c.isAccent ? 'style="background: linear-gradient(135deg, var(--accent), #991b1b);"' : '';
+                const btnId = key === 'free' ? 'id="free-btn"' : '';
+
+                html += `
+                <div class="case-card" ${borderColor} onclick="playSound('click'); openFullscreenCaseModal('${key}')">
+                    <div>
+                        <img src="${c.img}" alt="${c.title}" class="case-img" onerror="this.src='https://placehold.co/300x200/111319/ff334f?text=Case'">
+                        <div class="case-title" ${titleColor}>${c.title}</div>
+                        <div class="case-price" id="${key === 'free' ? 'free-price-text' : ''}">${priceText}</div>
+                    </div>
+                    <button class="btn" ${btnId} ${btnStyle} onclick="event.stopPropagation(); playSound('click'); openFullscreenCaseModal('${key}')">Открыть</button>
+                </div>`;
+            }
+            container.innerHTML = count === 0 ? '<div class="empty-text">В этой категории пока нет кейсов.</div>' : html;
+            updateFreeCaseTimerUI();
+        }
+
+        function openFullscreenCaseModal(caseKey) {
+            currentSelectedCase = caseKey;
+            selectedOpenQty = 1;
+            const caseData = defaultCasesData[caseKey];
+            if (!caseData) return;
+
+            document.getElementById('fs-case-img').src = caseData.img;
+            document.getElementById('fs-case-title').innerText = caseData.title;
+            document.getElementById('fs-case-price').innerText = caseData.price === 0 ? 'Бесплатно (раз в 24 часа)' : `${caseData.price} Braincoins за 1 шт.`;
+
+            ['qty-btn-2', 'qty-btn-3', 'qty-btn-4', 'qty-btn-5'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = (caseKey === 'free');
+            });
+
+            document.querySelectorAll('.qty-num-btn').forEach((b, idx) => {
+                if (idx === 0) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+
+            const itemsGrid = document.getElementById('fs-case-items-grid');
+            const pool = itemsData[caseKey] || itemsData['free'] || [];
+            let itemsHtml = '';
+            pool.forEach(it => {
+                itemsHtml += `
+                <div class="case-item-preview-card">
+                    <img src="${it.icon}" class="case-item-preview-img" alt="${it.name}" onerror="this.src='https://placehold.co/80x80/111319/ff334f?text=Pet'">
+                    <div style="font-size: 0.75rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${it.name}">${it.name}</div>
+                    <div style="font-size: 0.7rem; color: var(--warning); margin-top: 2px;">${it.price} 🪙</div>
+                </div>`;
+            });
+            itemsGrid.innerHTML = itemsHtml;
+            document.getElementById('case-fullscreen-modal').style.display = 'flex';
+        }
+
+        function closeFullscreenCaseModal() {
+            playSound('click');
+            document.getElementById('case-fullscreen-modal').style.display = 'none';
+        }
+
+        function setOpenQty(qty, event) {
+            playSound('click');
+            if (currentSelectedCase === 'free' && qty > 1) return;
+            selectedOpenQty = qty;
+            document.querySelectorAll('.qty-num-btn').forEach(btn => btn.classList.remove('active'));
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+            const caseData = defaultCasesData[currentSelectedCase];
+            if (caseData) {
+                const total = caseData.price * qty;
+                document.getElementById('fs-case-price').innerText = total === 0 ? 'Бесплатно' : `${total} Braincoins за ${qty} шт.`;
+            }
+        }
+
+        function confirmAndOpenCase() {
+            playSound('click');
+            if (!currentUser) {
+                closeFullscreenCaseModal();
+                openAuthModal();
+                return;
+            }
+            const caseKey = currentSelectedCase;
+            const caseData = defaultCasesData[caseKey];
+            if (!caseData) return;
+
+            if (caseKey === 'free') {
+                if (!isTgSubscribed) {
+                    closeFullscreenCaseModal();
+                    document.getElementById('tg-sub-modal').style.display = 'flex';
+                    return;
+                }
+                if (Date.now() < freeCaseCooldownEnd) {
+                    showToast('Бесплатный кейс ещё на перезарядке!', 'error');
+                    return;
+                }
+                closeFullscreenCaseModal();
+                freeCaseCooldownEnd = Date.now() + 24 * 3600000;
+                saveUserData();
+                updateFreeCaseTimerUI();
+                wonItemsQueue = [getRandomItem(caseKey, itemsData[caseKey])];
+                startOpeningAnimationAndRun();
+                return;
+            }
+
+            const qty = selectedOpenQty;
+            const price = caseData.price * qty;
+            updateBalance(-price, (success) => {
+                if (!success) return;
+                closeFullscreenCaseModal();
+                wonItemsQueue = [];
+                const pool = itemsData[caseKey] || itemsData['free'];
+                for (let i = 0; i < qty; i++) {
+                    wonItemsQueue.push(getRandomItem(caseKey, pool));
+                }
+                startOpeningAnimationAndRun();
+            });
+        }
+
+        // --- Режим устройства и Turbo ---
+        function openDeviceModal() {
+            playSound('click');
+            document.getElementById('device-modal').style.display = 'flex';
+        }
+
+        function selectDeviceMode(mode) {
+            playSound('click');
+            applyDeviceMode(mode, true);
+            document.getElementById('device-modal').style.display = 'none';
+            if (!currentUser) openAuthModal();
+        }
+
+        function applyDeviceMode(mode, save = true) {
+            currentDeviceMode = mode;
+            if (save) localStorage.setItem('akirabrain_device_mode', mode);
+            document.body.classList.remove('device-pc', 'device-mobile');
+            document.body.classList.add(mode === 'mobile' ? 'device-mobile' : 'device-pc');
+            const iconEl = document.getElementById('device-indicator-icon');
+            const textEl = document.getElementById('device-indicator-text');
+            if (iconEl) iconEl.innerText = mode === 'mobile' ? '📱' : '🖥️';
+            if (textEl) textEl.innerText = mode === 'mobile' ? 'Телефон' : 'ПК';
+        }
+
+        function toggleTurboMode() {
+            turboMode = !turboMode;
+            playSound('click');
+            const btn = document.getElementById('turbo-toggle-btn');
+            const txt = document.getElementById('turbo-status-text');
+            if (turboMode) {
+                btn.classList.add('active');
+                txt.innerText = 'Вкл';
+            } else {
+                btn.classList.remove('active');
+                txt.innerText = 'Выкл';
+            }
+        }
+
+        // --- Telegram подписка ---
+        function markTgLinkOpened() {
+            tgLinkClicked = true;
+        }
+
+        function verifyTgSubscription() {
+            playSound('click');
+            if (!tgLinkClicked) {
+                showToast('Сначала перейдите по кнопке выше и подпишитесь на канал!', 'error');
+                return;
+            }
+            isTgSubscribed = true;
+            localStorage.setItem('akirabrain_tg_sub_akirateam211', 'true');
+            closeTgSubModal();
+            showToast('Подписка подтверждена! Теперь можно открыть Free Case.', 'success');
+            openFullscreenCaseModal('free');
+        }
+
+        function closeTgSubModal() {
+            document.getElementById('tg-sub-modal').style.display = 'none';
+        }
+
+        // --- Апгрейдер ---
+        let upgraderPickerMode = 'source';
+        let upgraderCurrentPointerAngle = 0;
+        let isUpgradingSpinning = false;
+
+        function initUpgraderTab() {
+            upgraderPickerMode = 'source';
+            renderUpgraderPicker();
+            updateUpgraderSlotsUI();
+        }
+
+        function openUpgraderSelector(mode) {
+            if (isUpgradingSpinning) return;
+            playSound('click');
+            upgraderPickerMode = mode;
+            renderUpgraderPicker();
+        }
+
+        function setTargetChance(chance) {
+            if (isUpgradingSpinning) return;
+            playSound('click');
+            selectedDesiredChance = chance;
+            document.querySelectorAll('.chance-btn').forEach(b => {
+                b.classList.toggle('active', parseInt(b.innerText) === chance);
+            });
+            if (upgraderSourceIndex !== null && inventory[upgraderSourceIndex]) {
+                const srcPrice = inventory[upgraderSourceIndex].price;
+                const desiredTargetPrice = Math.max(srcPrice + 1, Math.round(srcPrice * (100 / chance)));
+                const allPets = getAllUniqueBrainrots().filter(p => p.price > srcPrice);
+                if (allPets.length > 0) {
+                    allPets.sort((a, b) => Math.abs(a.price - desiredTargetPrice) - Math.abs(b.price - desiredTargetPrice));
+                    upgraderTargetItem = allPets[0];
+                }
+            }
+            updateUpgraderSlotsUI();
+        }
+
+        function renderUpgraderPicker() {
+            const grid = document.getElementById('upgrader-inventory-grid');
+            const title = document.getElementById('upgrader-picker-title');
+            const indicator = document.getElementById('upgrader-mode-indicator');
+            if (!grid) return;
+
+            if (upgraderPickerMode === 'source') {
+                title.innerText = '🎒 Выберите ставку';
+                indicator.innerText = 'Режим: Выбор ставки';
+                const usable = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
+                if (usable.length === 0) {
+                    grid.innerHTML = '<div class="empty-text">Нет доступных предметов</div>';
+                    return;
+                }
+                let html = '';
+                usable.forEach(item => {
+                    const isSel = upgraderSourceIndex === item.originalIndex ? 'selected' : '';
+                    html += `<div class="inv-card ${isSel}" onclick="pickUpgraderSource(${item.originalIndex})">
+                        <div>
+                            <img src="${item.icon}" class="inv-item-img">
+                            <div class="inv-item-name">${item.name}</div>
+                            <div class="inv-item-price">${item.price} 🪙</div>
+                        </div>
+                    </div>`;
+                });
+                grid.innerHTML = html;
+            } else {
+                title.innerText = '🏆 Выберите желаемый приз';
+                indicator.innerText = 'Режим: Выбор приза';
+                const minPrice = (upgraderSourceIndex !== null && inventory[upgraderSourceIndex]) ? inventory[upgraderSourceIndex].price + 1 : 2;
+                const targets = getAllUniqueBrainrots().filter(it => it.price >= minPrice);
+                if (targets.length === 0) {
+                    grid.innerHTML = '<div class="empty-text">Нет более дорогих предметов</div>';
+                    return;
+                }
+                let html = '';
+                targets.forEach((item, idx) => {
+                    const isSel = (upgraderTargetItem && upgraderTargetItem.name === item.name) ? 'selected' : '';
+                    html += `<div class="inv-card ${isSel}" onclick="pickUpgraderTarget(${idx}, ${minPrice})">
+                        <div>
+                            <img src="${item.icon}" class="inv-item-img">
+                            <div class="inv-item-name">${item.name}</div>
+                            <div class="inv-item-price">${item.price} 🪙</div>
+                        </div>
+                    </div>`;
+                });
+                grid.innerHTML = html;
+            }
+        }
+
+        function pickUpgraderSource(index) {
+            if (isUpgradingSpinning) return;
+            playSound('click');
+            upgraderSourceIndex = index;
+            if (upgraderTargetItem && inventory[index] && upgraderTargetItem.price <= inventory[index].price) {
+                upgraderTargetItem = null;
+            }
+            upgraderPickerMode = 'target';
+            renderUpgraderPicker();
+            updateUpgraderSlotsUI();
+        }
+
+        function pickUpgraderTarget(filteredIdx, minPrice) {
+            if (isUpgradingSpinning) return;
+            playSound('click');
+            const targets = getAllUniqueBrainrots().filter(it => it.price >= minPrice);
+            upgraderTargetItem = targets[filteredIdx] || null;
+            renderUpgraderPicker();
+            updateUpgraderSlotsUI();
+        }
+
+        function updateUpgraderSlotsUI() {
+            const sourceSlot = document.getElementById('upgrader-source-slot');
+            const targetSlot = document.getElementById('upgrader-target-slot');
+            const actionBtn = document.getElementById('upgrade-action-btn');
+            const centerIcon = document.getElementById('wheel-center-icon');
+            const centerImg = document.getElementById('wheel-center-img');
+            const centerText = document.getElementById('wheel-center-text');
+
+            let sourcePrice = 0, targetPrice = 0, currentChance = selectedDesiredChance, multiplier = 1.00;
+
+            if (upgraderSourceIndex !== null && inventory[upgraderSourceIndex]) {
+                const src = inventory[upgraderSourceIndex];
+                sourceSlot.className = 'upgrader-slot filled';
+                sourceSlot.innerHTML = `<img src="${src.icon}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-bottom: 6px;"><div style="font-weight: bold; font-size: 0.85rem;">${src.name}</div><div style="color: var(--warning); font-size: 0.8rem;">${src.price} 🪙</div>`;
+                sourcePrice = src.price;
+                centerIcon.style.display = 'none';
+                centerImg.style.display = 'block';
+                centerImg.src = src.icon;
+            } else {
+                sourceSlot.className = 'upgrader-slot';
+                sourceSlot.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать ставку</span>';
+                centerIcon.style.display = 'block';
+                centerImg.style.display = 'none';
+            }
+
+            if (upgraderTargetItem) {
+                targetSlot.className = 'upgrader-slot filled';
+                targetSlot.innerHTML = `<img src="${upgraderTargetItem.icon}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 8px; margin-bottom: 6px;"><div style="font-weight: bold; font-size: 0.85rem;">${upgraderTargetItem.name}</div><div style="color: var(--warning); font-size: 0.8rem;">${upgraderTargetItem.price} 🪙</div>`;
+                targetPrice = upgraderTargetItem.price;
+            } else {
+                targetSlot.className = 'upgrader-slot';
+                targetSlot.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">+ Выбрать приз</span>';
+            }
+
+            if (sourcePrice > 0 && targetPrice > 0) {
+                currentChance = Math.min(80, Math.max(1, (sourcePrice / targetPrice) * 100 * 1.1));
+                multiplier = (targetPrice / sourcePrice).toFixed(2);
+            }
+
+            document.getElementById('upgrade-multiplier-text').innerText = multiplier + 'x';
+            document.getElementById('upgrade-chance-text').innerText = currentChance.toFixed(1) + '%';
+            centerText.innerText = currentChance.toFixed(1) + '%';
+
+            drawStaticUpgraderWheel(currentChance);
+            actionBtn.disabled = !(upgraderSourceIndex !== null && upgraderTargetItem && !isUpgradingSpinning);
+        }
+
+        function drawStaticUpgraderWheel(winChance) {
+            const canvas = document.getElementById('upgrader-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const cx = w / 2, cy = h / 2, radius = w / 2 - 4;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#25141c';
+            ctx.fill();
+
+            const winAngleSpan = (winChance / 100) * (2 * Math.PI);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            const startAngle = -Math.PI / 2 - (winAngleSpan / 2);
+            const endAngle = startAngle + winAngleSpan;
+            ctx.arc(cx, cy, radius, startAngle, endAngle, false);
+            ctx.lineTo(cx, cy);
+            ctx.fillStyle = '#2ed573';
+            ctx.fill();
+        }
+
+        function startUpgrade() {
+            if (isUpgradingSpinning || upgraderSourceIndex === null || !inventory[upgraderSourceIndex] || !upgraderTargetItem) return;
+            playSound('open');
+            isUpgradingSpinning = true;
+
+            const src = inventory[upgraderSourceIndex];
+            const targetPrize = { ...upgraderTargetItem };
+            const winChance = Math.min(80, Math.max(1, (src.price / targetPrize.price) * 100 * 1.1));
+
+            inventory.splice(upgraderSourceIndex, 1);
+            upgraderSourceIndex = null;
+            saveUserData();
+            renderInventory();
+            updateUpgraderSlotsUI();
+
+            const isSuccess = Math.random() * 100 <= winChance;
+            const winAngleSpan = (winChance / 100) * 360;
+            let targetStopAngle;
+            if (isSuccess) {
+                targetStopAngle = (Math.random() * Math.max(2, winAngleSpan - 6)) - (winAngleSpan / 2) + 3;
+            } else {
+                const minOffset = winAngleSpan / 2 + 6;
+                const maxOffset = 354 - winAngleSpan / 2;
+                targetStopAngle = minOffset + Math.random() * Math.max(10, maxOffset - minOffset);
+                if (Math.random() < 0.5) targetStopAngle = -targetStopAngle;
+            }
+
+            const baseNorm = ((upgraderCurrentPointerAngle % 360) + 360) % 360;
+            const desiredNorm = ((targetStopAngle % 360) + 360) % 360;
+            const deltaAngle = ((desiredNorm - baseNorm + 360) % 360) + 360 * 5;
+            const startAngle = upgraderCurrentPointerAngle;
+            const targetTotalRotation = startAngle + deltaAngle;
+
+            let startTime = null;
+            let lastTickAngle = startAngle;
+            const duration = turboMode ? 700 : 4200;
+            const pointerEl = document.getElementById('rotating-pointer');
+
+            function animatePointer(timestamp) {
+                if (!startTime) startTime = timestamp;
+                let progress = (timestamp - startTime) / duration;
+                if (progress > 1) progress = 1;
+
+                upgraderCurrentPointerAngle = startAngle + (targetTotalRotation - startAngle) * (1 - Math.pow(1 - progress, 3));
+                if (pointerEl) pointerEl.style.transform = `rotate(${upgraderCurrentPointerAngle}deg)`;
+
+                if (Math.abs(upgraderCurrentPointerAngle - lastTickAngle) > 25) {
+                    playSound('upgrade-tick');
+                    lastTickAngle = upgraderCurrentPointerAngle;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animatePointer);
+                } else {
+                    playSound('open');
+                    isUpgradingSpinning = false;
+                    const modalText = document.getElementById('upgrade-modal-result-text');
+                    if (isSuccess) {
+                        const wonItem = { name: targetPrize.name, price: targetPrize.price, icon: targetPrize.icon, id: 'item_' + Date.now() + '_' + Math.random(), locked: false };
+                        inventory.push(wonItem);
+                        const activePlayerName = currentUser || 'Игрок';
+                        pushLiveDrop(activePlayerName, wonItem);
+                        checkAndUpdateBestDrop(activePlayerName, wonItem);
+                        modalText.innerHTML = `<span style="color: #2ed573;">⚡ УСПЕШНЫЙ АПГРЕЙД!</span><br><br><img src="${wonItem.icon}" style="width:80px;height:80px;object-fit:cover;border-radius:12px;"><br><div style="color: var(--warning); margin-top:8px;">${wonItem.name} (${wonItem.price} 🪙)</div>`;
+                    } else {
+                        modalText.innerHTML = `<span style="color: var(--danger);">💥 НЕУДАЧА! Предмет сгорел.</span>`;
+                    }
+                    saveUserData();
+                    renderInventory();
+                    renderUpgraderPicker();
+                    updateUpgraderSlotsUI();
+                    document.getElementById('upgrade-result-modal').style.display = 'flex';
+                }
+            }
+            requestAnimationFrame(animatePointer);
+        }
+
+        function closeUpgradeResultModal() {
+            playSound('click');
+            document.getElementById('upgrade-result-modal').style.display = 'none';
+        }
+
+        // --- Color Dice ---
+        let isDiceRolling = false;
+
+        function renderDicePalette() {
+            const container = document.getElementById('dice-palette-container');
+            if (!container) return;
+            let html = '';
+            diceColors.forEach(c => {
+                const selectedClass = (diceSelectedColor === c.name) ? 'selected' : '';
+                html += `<div class="dice-color-option ${selectedClass}" style="background-color: ${c.hex};" onclick="selectDiceColor('${c.name}')"></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function selectDiceColor(colorName) {
+            if (isDiceRolling) return;
+            playSound('click');
+            diceSelectedColor = colorName;
+            renderDicePalette();
+            updateDiceControlUI();
+        }
+
+        function openDiceItemPicker() {
+            if (isDiceRolling) return;
+            playSound('click');
+            const grid = document.getElementById('dice-picker-inventory-grid');
+            const usable = inventory.map((it, idx) => ({ ...it, originalIndex: idx })).filter(it => !it.locked);
+            if (usable.length === 0) {
+                grid.innerHTML = '<div class="empty-text">Нет доступных предметов</div>';
+            } else {
+                let html = '';
+                usable.forEach(item => {
+                    html += `<div class="inv-card" onclick="pickDiceBetItem(${item.originalIndex})">
+                        <div>
+                            <img src="${item.icon}" class="inv-item-img">
+                            <div class="inv-item-name">${item.name}</div>
+                            <div class="inv-item-price">${item.price} 🪙</div>
+                        </div>
+                    </div>`;
+                });
+                grid.innerHTML = html;
+            }
+            document.getElementById('dice-picker-modal').style.display = 'flex';
+        }
+
+        function closeDicePickerModal() {
+            document.getElementById('dice-picker-modal').style.display = 'none';
+        }
+
+        function pickDiceBetItem(index) {
+            playSound('click');
+            diceSelectedBetIndex = index;
+            closeDicePickerModal();
+            updateDiceControlUI();
+        }
+
+        function updateDiceControlUI() {
+            const box = document.getElementById('dice-selected-item-box');
+            const playBtn = document.getElementById('dice-play-btn');
+            if (!box || !playBtn) return;
+
+            if (diceSelectedBetIndex !== null && inventory[diceSelectedBetIndex] && !inventory[diceSelectedBetIndex].locked) {
+                const it = inventory[diceSelectedBetIndex];
+                box.innerHTML = `<img src="${it.icon}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;"> <div><div style="font-weight: bold; font-size: 0.9rem;">${it.name}</div><div style="color: var(--warning); font-size: 0.8rem;">${it.price} 🪙</div></div>`;
+            } else {
+                diceSelectedBetIndex = null;
+                box.innerHTML = `<span style="color: var(--text-secondary); font-size: 0.85rem;">Предмет не выбран</span>`;
+            }
+            playBtn.disabled = !(diceSelectedBetIndex !== null && diceSelectedColor !== null && !isDiceRolling);
+        }
+
+        function playColorDice() {
+            if (isDiceRolling || diceSelectedBetIndex === null || !inventory[diceSelectedBetIndex] || !diceSelectedColor) return;
+            playSound('open');
+            isDiceRolling = true;
+            document.getElementById('dice-play-btn').disabled = true;
+
+            const betItem = { ...inventory[diceSelectedBetIndex] };
+            inventory.splice(diceSelectedBetIndex, 1);
+            diceSelectedBetIndex = null;
+            saveUserData();
+            renderInventory();
+
+            const chosenColorObj = diceColors.find(c => c.name === diceSelectedColor);
+            const isSnowJackpot = Math.random() < 0.03;
+            const rolled = [];
+            for (let i = 0; i < 4; i++) {
+                rolled.push(isSnowJackpot ? chosenColorObj : diceColors[Math.floor(Math.random() * diceColors.length)]);
+            }
+
+            const overlay = document.getElementById('dice-cinematic-overlay');
+            const statusText = document.getElementById('cinematic-status-text');
+            overlay.style.display = 'flex';
+
+            for (let i = 0; i < 4; i++) {
+                const cDie = document.getElementById(`c-die-${i}`);
+                cDie.classList.remove('show', 'dice-snow-effect');
+                cDie.style.backgroundColor = '#2a1f18';
+            }
+
+            const stepDelay = turboMode ? 120 : 420;
+            rolled.forEach((dieColor, i) => {
+                setTimeout(() => {
+                    playSound('tick');
+                    const cDie = document.getElementById(`c-die-${i}`);
+                    cDie.style.backgroundColor = dieColor.hex;
+                    if (isSnowJackpot) cDie.classList.add('dice-snow-effect');
+                    cDie.classList.add('show');
+                    statusText.innerText = isSnowJackpot ? '❄️ МЕТЕЛЬ! ЛЕДЯНОЙ ДЖЕКПОТ!' : `Выпал кубик #${i + 1}...`;
+                }, stepDelay * (i + 1));
+            });
+
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                for (let i = 0; i < 4; i++) {
+                    const mainDie = document.getElementById(`die-${i}`);
+                    mainDie.style.backgroundColor = rolled[i].hex;
+                    mainDie.classList.toggle('dice-snow-effect', isSnowJackpot);
+                }
+
+                const matches = rolled.filter(c => c.name === chosenColorObj.name).length;
+                let mult = 0;
+                if (isSnowJackpot) mult = 10;
+                else if (matches === 4) mult = 3;
+                else if (matches >= 1) mult = 2;
+
+                const resultMsg = document.getElementById('dice-result-msg');
+                if (mult > 0) {
+                    for (let k = 0; k < mult; k++) {
+                        inventory.push({ name: betItem.name, price: betItem.price, icon: betItem.icon, id: 'item_' + Date.now() + '_' + Math.random(), locked: false });
+                    }
+                    const activePlayerName = currentUser || 'Игрок';
+                    pushLiveDrop(activePlayerName, { ...betItem, price: betItem.price * mult });
+                    resultMsg.className = 'msg success';
+                    resultMsg.innerText = isSnowJackpot
+                        ? `❄️ ЛЕДЯНОЙ x10! Вы получили 10× ${betItem.name}!`
+                        : `🎉 Совпадений: ${matches}! Выигрыш x${mult} (${mult}× ${betItem.name})!`;
+                } else {
+                    resultMsg.className = 'msg error';
+                    resultMsg.innerText = `😔 Нет совпадений. Ставка (${betItem.name}) проиграна.`;
+                }
+
+                diceHistory.unshift({
+                    itemName: betItem.name,
+                    chosenColorHex: chosenColorObj.hex,
+                    win: mult > 0,
+                    multiplier: `x${mult}`
+                });
+                if (diceHistory.length > 30) diceHistory.pop();
+
+                isDiceRolling = false;
+                saveUserData();
+                renderInventory();
+                renderDiceHistory();
+                updateDiceControlUI();
+            }, stepDelay * 5 + 200);
+        }
+
+        function renderDiceHistory() {
+            const container = document.getElementById('dice-history-list');
+            const label = document.getElementById('dice-total-spins-label');
+            if (label) label.innerText = `Всего прокрутов: ${diceHistory.length}`;
+            if (!container) return;
+
+            if (diceHistory.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 10px;">История пуста. Сделайте первый бросок!</div>';
+                return;
+            }
+
+            let html = '';
+            diceHistory.slice(0, 15).forEach(h => {
+                const statusColor = h.win ? '#2ed573' : 'var(--danger)';
+                const statusText = h.win ? `Победа (${h.multiplier})` : 'Проигрыш';
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--panel-border);">
+                    <div>🎲 Ставка: <b>${h.itemName}</b> | Цвет: <span style="color: ${h.chosenColorHex};">■</span></div>
+                    <div style="color: ${statusColor}; font-weight: bold;">${statusText}</div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- Админка заявок ---
+        function renderRequestsTable() {
+            const container = document.getElementById('requests-container');
+            if (!container) return;
+            if (!globalRequests || globalRequests.length === 0) {
+                container.innerHTML = '<div class="empty-text">Пока нет ни одной заявки</div>';
+                return;
+            }
+
+            let html = `<div style="overflow-x:auto;"><table class="requests-table">
+                <thead>
+                    <tr>
+                        <th>Тип</th>
+                        <th>Игрок / Roblox</th>
+                        <th>Предметы</th>
+                        <th>Время</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead><tbody>`;
+
+            globalRequests.forEach((req, idx) => {
+                const typeBadge = req.type === 'deposit' ? '💳 Пополнение' : '📤 Вывод';
+                const itemsText = req.item || (req.items || []).map(x => `${x.name} ×${x.qty || 1}`).join(', ');
+                const extra = req.type === 'deposit' ? `<br><small style="color:var(--warning);">+${req.rewardCoins || 0} 🪙${req.refCode ? ' · реф: ' + req.refCode : ''}</small>` : '';
+                const statusHtml = req.status === 'approved'
+                    ? '<span style="color:#2ed573;font-weight:bold;">Одобрено</span>'
+                    : (req.status === 'rejected'
+                        ? '<span style="color:var(--danger);font-weight:bold;">Отклонено</span>'
+                        : '<span style="color:var(--warning);font-weight:bold;">Ожидает</span>');
+
+                const actionsHtml = req.status === 'pending'
+                    ? `<div style="display:flex;gap:6px;">
+                        <button class="mini-btn" style="border-color:#2ed573;color:#2ed573;" onclick="handleRequestAction(${idx}, 'approved')">✓ Принять</button>
+                        <button class="mini-btn" style="border-color:var(--danger);color:var(--danger);" onclick="handleRequestAction(${idx}, 'rejected')">✕ Отклонить</button>
+                       </div>`
+                    : '—';
+
+                html += `<tr>
+                    <td><b>${typeBadge}</b></td>
+                    <td>${req.user} <small style="color:var(--text-secondary);">(${req.nick})</small></td>
+                    <td>${itemsText}${extra}</td>
+                    <td>${req.tradeTime || req.time}</td>
+                    <td>${statusHtml}</td>
+                    <td>${actionsHtml}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function handleRequestAction(index, newStatus) {
+            playSound('click');
+            const req = globalRequests[index];
+            if (!req || req.status !== 'pending') return;
+            req.status = newStatus;
+
+            const targetClean = req.user.trim().toLowerCase().replace(/[.#$\[\]]/g, '_');
+            if (!remoteCloudData.users) remoteCloudData.users = {};
+            if (!remoteCloudData.users[targetClean]) {
+                remoteCloudData.users[targetClean] = { balance: 0, inventory: [], usedPromos: [], refBalance: 0, refCount: 0 };
+            }
+            const targetUserObj = remoteCloudData.users[targetClean];
+
+            if (req.type === 'deposit' && newStatus === 'approved') {
+                const coins = Number(req.rewardCoins) || 0;
+                targetUserObj.balance = (Number(targetUserObj.balance) || 0) + coins;
+                if (req.user.toLowerCase() === currentUser.toLowerCase()) {
+                    balance = targetUserObj.balance;
+                    document.getElementById('balance').innerText = balance;
+                }
+                if (req.refCode) {
+                    const refClean = req.refCode.trim().toLowerCase().replace(/[.#$\[\]]/g, '_');
+                    if (remoteCloudData.users[refClean]) {
+                        const bonus = Math.max(1, Math.round(coins * 0.05));
+                        remoteCloudData.users[refClean].refBalance = (Number(remoteCloudData.users[refClean].refBalance) || 0) + bonus;
+                        remoteCloudData.users[refClean].refCount = (Number(remoteCloudData.users[refClean].refCount) || 0) + 1;
+                    }
+                }
+            } else if (req.type === 'withdraw') {
+                const ids = req.inventoryItemIds || [];
+                if (newStatus === 'approved') {
+                    targetUserObj.inventory = (targetUserObj.inventory || []).filter(it => !ids.includes(it.id));
+                    if (req.user.toLowerCase() === currentUser.toLowerCase()) {
+                        inventory = inventory.filter(it => !ids.includes(it.id));
+                    }
+                } else if (newStatus === 'rejected') {
+                    (targetUserObj.inventory || []).forEach(it => { if (ids.includes(it.id)) it.locked = false; });
+                    if (req.user.toLowerCase() === currentUser.toLowerCase()) {
+                        inventory.forEach(it => { if (ids.includes(it.id)) it.locked = false; });
+                    }
+                }
+            }
+
+            saveUserData();
+            renderInventory();
+            renderRequestsTable();
+            showToast(`Заявка ${newStatus === 'approved' ? 'одобрена' : 'отклонена'}!`, 'success');
+        }
+
+        function clearAllRequests() {
+            playSound('click');
+            showConfirmModal('Очистить всю историю заявок?', () => {
+                globalRequests = [];
+                saveCloudData();
+                renderRequestsTable();
+                showToast('История заявок очищена.', 'info');
+            });
+        }
+
+        // --- Админка контента ---
+        function initAdminContentPanel() {
+            adminSelectedCaseItems.clear();
+            renderAdminCaseItemChoices();
+            renderAdminCaseManager();
+            renderAdminGlobalItems();
+            renderAdminPromoList();
+            const themeSel = document.getElementById('admin-theme-select');
+            if (themeSel) themeSel.value = activeSiteTheme;
+            if (remoteCloudData.fuseSettings) {
+                document.getElementById('admin-fuse-title').value = remoteCloudData.fuseSettings.title || '';
+                document.getElementById('admin-fuse-image').value = remoteCloudData.fuseSettings.image || '';
+            }
+        }
+
+        function renderAdminCaseItemChoices() {
+            const container = document.getElementById('admin-case-item-choices');
+            if (!container) return;
+            const search = (document.getElementById('admin-case-item-search')?.value || '').toLowerCase();
+            const all = getAllUniqueBrainrots().filter(it => it.name.toLowerCase().includes(search));
+            let html = '';
+            all.forEach(it => {
+                const isSel = adminSelectedCaseItems.has(it.name) ? 'selected' : '';
+                html += `<div class="select-card ${isSel}" onclick="toggleAdminCaseItemChoice('${encodeURIComponent(it.name)}')">
+                    <img src="${it.icon}">
+                    <b style="font-size:0.75rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${it.name}</b>
+                    <small style="color:var(--warning);">${it.price} 🪙</small>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleAdminCaseItemChoice(encodedName) {
+            const name = decodeURIComponent(encodedName);
+            if (adminSelectedCaseItems.has(name)) adminSelectedCaseItems.delete(name);
+            else adminSelectedCaseItems.add(name);
+            renderAdminCaseItemChoices();
+        }
+
+        function adminAddNewCase() {
+            const key = document.getElementById('admin-case-key').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+            const title = document.getElementById('admin-case-title').value.trim();
+            const price = Number(document.getElementById('admin-case-price').value);
+            const img = document.getElementById('admin-case-img').value.trim() || 'https://files.catbox.moe/wj3b5n.jpg';
+            const category = document.getElementById('admin-case-category').value;
+            const msg = document.getElementById('admin-case-msg');
+
+            if (!key || !title || isNaN(price) || price < 0) {
+                msg.className = 'msg error';
+                msg.innerText = 'Заполните ключ, название и цену кейса!';
+                return;
+            }
+            const all = getAllUniqueBrainrots();
+            const chosen = all.filter(it => adminSelectedCaseItems.has(it.name));
+            if (chosen.length === 0) {
+                msg.className = 'msg error';
+                msg.innerText = 'Выберите хотя бы одного брейнрота для кейса!';
+                return;
+            }
+
+            defaultCasesData[key] = { title, price, img, category };
+            itemsData[key] = chosen.map(it => ({ ...it }));
+            saveCustomContentAndCloud();
+            renderCasesGrid();
+            renderAdminCaseManager();
+            adminSelectedCaseItems.clear();
+            renderAdminCaseItemChoices();
+            msg.className = 'msg success';
+            msg.innerText = `Кейс «${title}» создан!`;
+        }
+
+        function renderAdminCaseManager() {
+            const container = document.getElementById('admin-case-manager');
+            if (!container) return;
+            let html = '';
+            Object.entries(defaultCasesData).forEach(([key, c]) => {
+                const count = (itemsData[key] || []).length;
+                html += `<div class="admin-row">
+                    <img src="${c.img}">
+                    <div class="admin-row-main">
+                        <b>${c.title}</b> (${c.price} 🪙)
+                        <small>Ключ: ${key} · Предметов: ${count}</small>
+                    </div>
+                    ${key !== 'free' ? `<button onclick="adminDeleteCase('${key}')">Удалить</button>` : ''}
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function adminDeleteCase(key) {
+            showConfirmModal(`Удалить кейс «${defaultCasesData[key]?.title || key}»?`, () => {
+                delete defaultCasesData[key];
+                delete itemsData[key];
+                saveCustomContentAndCloud();
+                renderCasesGrid();
+                renderAdminCaseManager();
+            });
+        }
+
+        function renderAdminGlobalItems() {
+            const container = document.getElementById('admin-global-items');
+            if (!container) return;
+            const q = (document.getElementById('admin-global-search')?.value || '').toLowerCase();
+            const all = getAllUniqueBrainrots().filter(it => it.name.toLowerCase().includes(q));
+            let html = '';
+            all.forEach(it => {
+                html += `<div class="admin-row">
+                    <img src="${it.icon}">
+                    <div class="admin-row-main"><b>${it.name}</b><small>${it.price} 🪙</small></div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function adminAddNewBrainrot() {
+            const name = document.getElementById('admin-item-name').value.trim();
+            const price = Number(document.getElementById('admin-item-price').value);
+            const icon = document.getElementById('admin-item-icon').value.trim();
+            const msg = document.getElementById('admin-item-msg');
+            if (!name || isNaN(price) || price <= 0 || !icon) {
+                msg.className = 'msg error';
+                msg.innerText = 'Заполните название, цену и URL картинки!';
+                return;
+            }
+            if (!itemsData.random) itemsData.random = [];
+            itemsData.random.push({ name, price, icon });
+            saveCustomContentAndCloud();
+            renderAdminGlobalItems();
+            renderAdminCaseItemChoices();
+            msg.className = 'msg success';
+            msg.innerText = `Брейнрот «${name}» добавлен в каталог!`;
+        }
+
+        function adminAddNewPromo() {
+            const code = document.getElementById('admin-promo-code').value.trim().toUpperCase();
+            const reward = Number(document.getElementById('admin-promo-reward').value);
+            const limit = Number(document.getElementById('admin-promo-limit').value);
+            const msg = document.getElementById('admin-promo-msg');
+            if (!code || isNaN(reward) || reward <= 0 || isNaN(limit) || limit <= 0) {
+                msg.className = 'msg error';
+                msg.innerText = 'Заполните код, награду и лимит!';
+                return;
+            }
+            promoCodes[code] = { reward, maxUses: limit, uses: 0 };
+            saveCloudData();
+            renderAdminPromoList();
+            msg.className = 'msg success';
+            msg.innerText = `Промокод ${code} создан!`;
+        }
+
+        function renderAdminPromoList() {
+            const container = document.getElementById('admin-promo-list');
+            if (!container) return;
+            let html = '';
+            Object.entries(promoCodes).forEach(([code, p]) => {
+                html += `<div class="admin-row">
+                    <div class="admin-row-main"><b>${code}</b><small>Награда: ${p.reward} 🪙 · Использовано: ${p.uses}/${p.maxUses}</small></div>
+                    <button onclick="adminDeletePromo('${code}')">Удалить</button>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function adminDeletePromo(code) {
+            delete promoCodes[code];
+            if (!Array.isArray(remoteCloudData.deletedPromos)) remoteCloudData.deletedPromos = [];
+            if (!remoteCloudData.deletedPromos.includes(code)) remoteCloudData.deletedPromos.push(code);
+            saveCloudData();
+            renderAdminPromoList();
+        }
+
+        function adminGiveUserBalance() {
+            const nick = document.getElementById('admin-give-nick').value.trim();
+            const amount = Number(document.getElementById('admin-give-amount').value);
+            const msg = document.getElementById('admin-give-msg');
+            if (!nick || isNaN(amount) || amount === 0) {
+                msg.className = 'msg error';
+                msg.innerText = 'Укажите ник и сумму!';
+                return;
+            }
+            const clean = nick.toLowerCase().replace(/[.#$\[\]]/g, '_');
+            if (!remoteCloudData.users) remoteCloudData.users = {};
+            if (!remoteCloudData.users[clean]) {
+                remoteCloudData.users[clean] = { balance: 0, inventory: [], usedPromos: [], refBalance: 0, refCount: 0 };
+            }
+            remoteCloudData.users[clean].balance = Math.max(0, (Number(remoteCloudData.users[clean].balance) || 0) + amount);
+            if (currentUser && currentUser.toLowerCase() === nick.toLowerCase()) {
+                balance = remoteCloudData.users[clean].balance;
+                document.getElementById('balance').innerText = balance;
+            }
+            saveCloudData();
+            msg.className = 'msg success';
+            msg.innerText = `Баланс игрока ${nick} обновлён (${amount > 0 ? '+' : ''}${amount} 🪙)!`;
+        }
+
+        function applySiteTheme(theme, save = true) {
+            activeSiteTheme = theme || 'red';
+            document.body.classList.remove('theme-red', 'theme-halloween', 'theme-winter');
+            document.body.classList.add(`theme-${activeSiteTheme}`);
+            const snow = document.getElementById('theme-snow');
+            const icon = document.getElementById('site-season-icon');
+            const label = document.getElementById('site-edition-label');
+
+            if (activeSiteTheme === 'winter') {
+                if (icon) icon.innerText = '❄️';
+                if (label) label.innerText = '[Winter Edition]';
+                if (snow && snow.children.length === 0) {
+                    for (let i = 0; i < 22; i++) {
+                        const fl = document.createElement('div');
+                        fl.className = 'snowflake';
+                        fl.innerText = '❄';
+                        fl.style.left = Math.random() * 100 + 'vw';
+                        fl.style.animationDuration = (6 + Math.random() * 8) + 's';
+                        fl.style.animationDelay = (-Math.random() * 8) + 's';
+                        snow.appendChild(fl);
+                    }
+                }
+            } else {
+                if (snow) snow.innerHTML = '';
+                if (icon) icon.innerText = activeSiteTheme === 'halloween' ? '🎃' : '🔴';
+                if (label) label.innerText = activeSiteTheme === 'halloween' ? '[Halloween]' : '[Red Dark]';
+            }
+
+            if (save) {
+                if (!remoteCloudData.siteContent) remoteCloudData.siteContent = {};
+                remoteCloudData.siteContent.theme = activeSiteTheme;
+                saveCloudData();
+            }
+        }
+
+        function adminApplyTheme() {
+            const val = document.getElementById('admin-theme-select').value;
+            applySiteTheme(val, true);
+            const msg = document.getElementById('admin-theme-msg');
+            msg.className = 'msg success';
+            msg.innerText = 'Тема применена!';
+        }
+
+        function applyFuseSettings() {
+            const fs = remoteCloudData.fuseSettings;
+            if (!fs) return;
+            const titleEl = document.getElementById('fuse-title');
+            const imgEl = document.getElementById('fuse-banner-image');
+            if (titleEl && fs.title) titleEl.innerText = fs.title;
+            if (imgEl && fs.image) imgEl.src = fs.image;
+        }
+
+        function adminSaveFuseSettings() {
+            const title = document.getElementById('admin-fuse-title').value.trim();
+            const image = document.getElementById('admin-fuse-image').value.trim();
+            remoteCloudData.fuseSettings = { title: title || '❄️ Winter Fuse', image: image || 'https://files.catbox.moe/hf9r73.jpg' };
+            applyFuseSettings();
+            saveCloudData();
+            const msg = document.getElementById('admin-fuse-msg');
+            msg.className = 'msg success';
+            msg.innerText = 'Настройки Fuse сохранены!';
+        }
+
+        function saveCustomContentAndCloud() {
+            localStorage.setItem('akirabrain_custom_cases', JSON.stringify(defaultCasesData));
+            localStorage.setItem('akirabrain_custom_items', JSON.stringify(itemsData));
+            if (!remoteCloudData.siteContent) remoteCloudData.siteContent = {};
+            remoteCloudData.siteContent.cases = defaultCasesData;
+            remoteCloudData.siteContent.items = itemsData;
+            saveCloudData();
+        }
+
+        // --- Облачная синхронизация ---
+        function syncCloudData(callback) {
+            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': JSONBIN_MASTER_KEY }
+            })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data && data.record) {
+                    applyRemoteCloudRecord(data.record);
+                    saveLocalCloudMirror();
+                }
+                if (callback) callback();
+            })
+            .catch(() => {
+                if (callback) callback();
+            });
+        }
+
+        function saveCloudData() {
+            remoteCloudData.requests = globalRequests;
+            remoteCloudData.promoCodes = promoCodes;
+            remoteCloudData.liveDrops = liveDropsList;
+
+            if (currentUser) {
+                const cleanUser = getCurrentCleanUser();
+                if (!remoteCloudData.users) remoteCloudData.users = {};
+                remoteCloudData.users[cleanUser] = {
+                    balance,
+                    inventory,
+                    usedPromos,
+                    freeCaseCooldownEnd,
+                    refBalance,
+                    refCount,
+                    diceHistory
+                };
+            }
+
+            saveLocalCloudMirror();
+
+            fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_MASTER_KEY
+                },
+                body: JSON.stringify(remoteCloudData)
+            }).catch(() => {});
         }
     </script>
 </body>
